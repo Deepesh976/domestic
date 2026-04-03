@@ -139,7 +139,7 @@ export default function CustomerKycView() {
 
               <ImageWrap>
                 <Image
-                  src={`https://admin.smartroplus.in/uploads/kyccustomers/${customer.kyc_details.doc_image}`}
+                  src={`http://admin.smartroplus.in/uploads/kyccustomers/${customer.kyc_details.doc_image}`}
                   alt="Customer KYC"
                 />
               </ImageWrap>

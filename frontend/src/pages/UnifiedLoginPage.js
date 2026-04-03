@@ -87,7 +87,7 @@ const UnifiedLoginPage = () => {
         1️⃣ SUPER ADMIN LOGIN
       ========================= */
       const superAdminRes = await fetch(
-        'https://admin.smartroplus.in/api/superadmin/auth/login',
+        'http://admin.smartroplus.in/api/superadmin/auth/login',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -107,7 +107,7 @@ const UnifiedLoginPage = () => {
         2️⃣ HEADADMIN / ADMIN LOGIN
       ========================= */
       const orgUserRes = await fetch(
-        'https://admin.smartroplus.in/api/headadmin/auth/login',
+        'http://admin.smartroplus.in/api/headadmin/auth/login',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -183,7 +183,7 @@ const UnifiedLoginPage = () => {
 
     try {
       let res = await fetch(
-        'https://admin.smartroplus.in/api/superadmin/auth/forgot-password',
+        'http://admin.smartroplus.in/api/superadmin/auth/forgot-password',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -193,7 +193,7 @@ const UnifiedLoginPage = () => {
 
       if (!res.ok) {
         res = await fetch(
-          'https://admin.smartroplus.in/api/headadmin/auth/forgot-password',
+          'http://admin.smartroplus.in/api/headadmin/auth/forgot-password',
           {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

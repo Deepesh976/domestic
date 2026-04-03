@@ -138,7 +138,7 @@ export default function AdminKycView() {
     );
   }
 
-  const imageUrl = `https://admin.smartroplus.in/uploads/kycadmins/${admin.kyc_details.kyc_image}`;
+  const imageUrl = `http://admin.smartroplus.in/uploads/kycadmins/${admin.kyc_details.kyc_image}`;
 
   return (
     <HeadAdminNavbar>
