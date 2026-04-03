@@ -1501,7 +1501,7 @@ const AdminInfo = () => {
               {kycViewerData.kyc_details?.kyc_image && (
 <KycImage
   src={`${
-    process.env.REACT_APP_API_URL || 'http://admin.smartroplus.in'
+    process.env.REACT_APP_API_URL || 'https://admin.smartroplus.in'
   }/uploads/kycadmins/${kycViewerData.kyc_details.kyc_image}`}
 />
               )}
