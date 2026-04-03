@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "http://localhost:5000",
+  "proxy": "http://admin.smartroplus.in",
   "dependencies": {
     "@builder.io/react": "^9.1.0",
     "@reduxjs/toolkit": "^2.2.7",
