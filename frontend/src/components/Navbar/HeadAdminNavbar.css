@@ -1,0 +1,217 @@
+/* ================= RESET ================= */
+* {
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #f4f6f8;
+  color: #0f172a;
+}
+
+/* ================= LAYOUT ================= */
+.layout {
+  min-height: 100vh;
+  background: #f4f6f8;
+}
+
+/* ================= TOP BAR ================= */
+.topbar {
+  height: 64px;
+  display: grid;
+  grid-template-columns: 64px 1fr 220px;
+  align-items: center;
+  padding: 0 16px;
+  background: linear-gradient(90deg, #0369a1, #0ea5e9);
+  color: white;
+  position: fixed;
+  inset: 0 0 auto 0; /* top fixed, no guessing */
+  z-index: 1000;
+}
+
+/* ---------- LEFT ---------- */
+.topbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.hamburger {
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.hamburger:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+/* ---------- CENTER ---------- */
+.topbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.org-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  object-fit: contain;
+  background: white;
+  padding: 4px;
+}
+
+.org-fallback {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.25);
+  font-weight: 700;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.org-name {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+/* ---------- RIGHT ---------- */
+.topbar-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ================= PROFILE ================= */
+.profile {
+  position: relative;
+}
+
+.profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.18);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.profile-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.profile-menu {
+  position: absolute;
+  right: 0;
+  top: 52px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  min-width: 170px;
+  z-index: 1100;
+}
+
+.profile-menu button {
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: white;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.profile-menu button:hover {
+  background: #f3f4f6;
+}
+
+.profile-menu .logout {
+  color: #dc2626;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  position: fixed;
+  top: 64px;
+  left: -260px;
+  width: 260px;
+  height: calc(100vh - 64px);
+  background: linear-gradient(180deg, #003d82, #0047a3);
+  padding: 16px 12px;
+  transition: left 0.3s ease;
+  z-index: 999;
+  overflow-y: auto;
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+/* ================= MENU ================= */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: #e0f2fe;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.menu-item.active {
+  background: rgba(255, 255, 255, 0.25);
+  font-weight: 600;
+}
+
+.icon {
+  font-size: 18px;
+}
+
+/* ================= CONTENT ================= */
+/* 🔥 THIS IS THE MOST IMPORTANT FIX */
+.content {
+  padding: 16px 24px 32px;
+  padding-top: 64px; /* EXACT navbar height – NO EXTRA */
+}
+
+/* ================= OVERLAY ================= */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 998;
+}
