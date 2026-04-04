@@ -8,13 +8,15 @@ import {
   createDevice,
 } from '../../services/superAdminService';
 import SuperAdminNavbar from '../../components/Navbar/SuperAdminNavbar';
+import axios from '../../utils/axiosConfig';
+import { createGlobalStyle } from 'styled-components';
 
 /* ================= STYLES ================= */
 const Page = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  padding: 32px;
+  gap: 16px;
+  padding: 8px 32px 24px; 
   background: #f8fafc;
   min-height: 100vh;
 `;
@@ -22,8 +24,8 @@ const Page = styled.div`
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
+  align-items: center;
+  gap: 16px;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -74,6 +76,27 @@ const AddButton = styled.button`
   }
 `;
 
+const DeleteButton = styled.button`
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  color: white;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
 const SearchSection = styled.div`
   display: flex;
   gap: 16px;
@@ -86,7 +109,8 @@ const SearchBox = styled.input`
   border-radius: 8px;
   border: 1px solid #cbd5e1;
   background: white;
-  width: 280px;
+  width: 240px;
+  min-width: 200px;
   font-size: 0.95rem;
   transition: all 0.2s ease;
 
@@ -163,11 +187,12 @@ const Tr = styled.tr`
 
 const Td = styled.td`
   padding: 14px 16px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  font-weight: 600;
   color: #334155;
 
   &:first-child {
-    font-weight: 500;
+    font-weight: 700;
     color: #1e293b;
   }
 `;
@@ -335,6 +360,15 @@ const FormSelect = styled.select`
   }
 `;
 
+  const GlobalStyles = createGlobalStyle`
+  input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #2563eb;
+    cursor: pointer;
+  }
+`;
+
 const ButtonGroup = styled.div`
   display: flex;
   gap: 12px;
@@ -403,6 +437,13 @@ const SuccessMessage = styled.div`
   gap: 8px;
 `;
 
+const RightSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;   /* 🔥 force single line */
+`;
+
 /* ================= COMPONENT ================= */
 const Devices = () => {
   const [devices, setDevices] = useState([]);
@@ -413,6 +454,7 @@ const Devices = () => {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
 
   /* Form State */
   const [form, setForm] = useState({
@@ -489,6 +531,21 @@ const Devices = () => {
     }
   };
 
+
+const handleDeleteDevice = async () => {
+  if (!selectedId) return;
+
+  if (!window.confirm('Delete selected device?')) return;
+
+  try {
+    await axios.delete(`/api/superadmin/devices/${selectedId}`);
+    setSelectedId(null);
+    loadData();
+  } catch (err) {
+    alert('Failed to delete device');
+  }
+};
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -557,32 +614,37 @@ const Devices = () => {
   return (
     <SuperAdminNavbar>
       <Page>
-        <Header>
-          <HeaderContent>
-            <Title>Devices</Title>
-            <Subtitle>
-              Manage all devices across your organizations
-            </Subtitle>
-          </HeaderContent>
-          <Actions>
-            <AddButton onClick={() => setShowAddModal(true)}>
-              + Add Device
-            </AddButton>
-          </Actions>
-        </Header>
+<Header>
+  <HeaderContent>
+    <Title>Devices</Title>
+  </HeaderContent>
 
-        <SearchSection>
-          <SearchBox
-            placeholder="🔍 Search by MAC or Serial..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <SearchBox
-            placeholder="🏢 Search by Organization..."
-            value={orgSearch}
-            onChange={(e) => setOrgSearch(e.target.value)}
-          />
-        </SearchSection>
+  <RightSection>
+    <SearchBox
+      placeholder="🔍 Search by MAC or Serial..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+    />
+
+    <SearchBox
+      placeholder="🏢 Search by Organization..."
+      value={orgSearch}
+      onChange={(e) => setOrgSearch(e.target.value)}
+    />
+
+    <AddButton onClick={() => setShowAddModal(true)}>
+      Add Device
+    </AddButton>
+
+<DeleteButton
+  disabled={!selectedId}
+  onClick={handleDeleteDevice}
+>
+  🗑 Delete Device
+</DeleteButton>
+
+  </RightSection>
+</Header>
 
         <DataCard>
           <CardHeader>
@@ -609,6 +671,7 @@ const Devices = () => {
             <Table>
               <thead>
                 <tr>
+                  <Th style={{ width: 40 }}></Th>
                   <Th>#</Th>
                   <Th>Organization</Th>
                   <Th>MAC ID</Th>
@@ -621,7 +684,23 @@ const Devices = () => {
 
               <tbody>
                 {filteredDevices.map((d, index) => (
-                  <Tr key={d._id}>
+                  <Tr
+  key={d._id}
+  onClick={() => setSelectedId(d._id)}
+  style={{
+    cursor: 'pointer',
+    background: selectedId === d._id ? '#eef2ff' : 'transparent'
+  }}
+>
+  <Td onClick={(e) => e.stopPropagation()}>
+    <input
+      type="radio"
+      checked={selectedId === d._id}
+      onChange={() => setSelectedId(d._id)}
+      style={{ cursor: 'pointer' }}
+    />
+  </Td>
+
                     <Td>{index + 1}</Td>
                     <Td>
                       <OrgBadge>{orgMap[d.org_id] || '—'}</OrgBadge>

@@ -19,7 +19,7 @@ import {
    STYLES - LAYOUT & CONTAINERS
 ========================= */
 const PageContainer = styled.div`
-  padding: 2rem;
+  padding: 1rem;
   background-color: #f8fafc;
   min-height: calc(100vh - 64px);
   font-family: 'Inter', -apple-system, sans-serif;
@@ -28,8 +28,8 @@ const PageContainer = styled.div`
 const HeaderSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 
   @media (min-width: 768px) {
     flex-direction: row;
@@ -100,6 +100,25 @@ const StatCard = styled.div`
       font-weight: 700;
       color: #1e293b;
     }
+  }
+`;
+
+
+const DownloadBtn = styled.button`
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
   }
 `;
 
@@ -200,6 +219,7 @@ const Th = styled.th`
 const Td = styled.td`
   padding: 1rem;
   font-size: 0.875rem;
+  font-weight: 500;
   color: #334155;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
@@ -346,10 +366,35 @@ export default function RechargeTransactions() {
     );
   }, [data, debouncedSearch]);
 
+  const downloadCSV = () => {
+  const rows = [
+    ['User', 'Txn ID', 'Plan', 'Amount', 'Mode', 'Status', 'Date'],
+    ...filtered.map(t => [
+      t.user_name,
+      t.txn_id,
+      t.plan_name,
+      t.amount,
+      t.payment_mode,
+      t.payment_status,
+      formatDate(t.created_at)
+    ])
+  ];
+
+  const csv = rows.map(r => r.join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'transactions.csv';
+  a.click();
+};
+
   const stats = useMemo(() => {
     const successful = data.filter(
   t => t.payment_status?.toLowerCase() === 'success'
 );
+
     return {
       totalCount: data.length,
       successCount: successful.length,
@@ -364,15 +409,18 @@ export default function RechargeTransactions() {
   return (
     <HeadAdminNavbar>
       <PageContainer>
-        <HeaderSection>
-          <TitleGroup>
-            <MdPayments />
-            <Title>
-              Recharge Transactions
-              {deviceId && <span> — {deviceId}</span>}
-            </Title>
-          </TitleGroup>
-        </HeaderSection>
+<HeaderSection>
+  <TitleGroup>
+    <Title>
+      All Transactions
+      {deviceId && <span> — {deviceId}</span>}
+    </Title>
+  </TitleGroup>
+
+  <DownloadBtn onClick={downloadCSV}>
+    📥 Export CSV
+  </DownloadBtn>
+</HeaderSection>
 
         <StatsGrid>
           <StatCard bg="#eff6ff" color="#2563eb">
@@ -472,7 +520,9 @@ export default function RechargeTransactions() {
                       <Td>
                         <TxnId>{t.txn_id}</TxnId>
                       </Td>
-                      <Td>{t.plan_name || '—'}</Td>
+                      <Td style={{ fontWeight: 600 }}>
+  {t.plan_name || '—'}
+</Td>
                       <Td>
                         <Amount>₹ {t.amount?.toLocaleString() || '0'}</Amount>
                       </Td>

@@ -138,7 +138,6 @@ export default function HeadAdminDashboard() {
         <div className="dashboard-header">
           <div>
             <h1 className="head-admin-dashboard-title">Dashboard Overview</h1>
-            <p className="dashboard-subtitle">Welcome back! Here's what's happening today.</p>
           </div>
           <div className="header-actions">
             <div className="dashboard-date">

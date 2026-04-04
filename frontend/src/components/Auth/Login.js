@@ -17,7 +17,7 @@ const Login = () => {
 
     try {
       const response = await fetch(
-        'http://admin.smartroplus.in/api/superadmin/auth/login',
+        'http://localhost:5000/api/superadmin/auth/login',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

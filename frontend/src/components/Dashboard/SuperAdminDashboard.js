@@ -42,22 +42,40 @@ const SuperAdminDashboard = () => {
 
   const [deviceGrowth, setDeviceGrowth] = useState([]);
   const [revenueGrowth, setRevenueGrowth] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [devices, setDevices] = useState([]);
 
   /* =========================
      LOAD ORGANIZATIONS
   ========================= */
-  useEffect(() => {
-    axios
-      .get('/api/superadmin/organizations')
-      .then((res) => {
-        const orgs = Array.isArray(res.data) ? res.data : [];
-        setOrganizations(orgs);
-        if (orgs.length > 0) {
-          setSelectedOrg(orgs[0]._id);
-        }
-      })
-      .catch(() => setOrganizations([]));
-  }, []);
+useEffect(() => {
+  Promise.all([
+    axios.get('/api/superadmin/organizations'),
+    axios.get('/api/superadmin/transactions'),
+    axios.get('/api/superadmin/devices'),
+  ])
+    .then(([orgRes, txnRes, deviceRes]) => {
+      // ORGS
+      const orgs = Array.isArray(orgRes.data) ? orgRes.data : [];
+      setOrganizations(orgs);
+
+      if (orgs.length > 0) {
+        setSelectedOrg(orgs[0]);
+      }
+
+      // TRANSACTIONS
+      const txns = Array.isArray(txnRes.data) ? txnRes.data : [];
+      setTransactions(txns);
+
+      const devs = Array.isArray(deviceRes.data) ? deviceRes.data : [];
+      setDevices(devs);
+    })
+    .catch(() => {
+      setOrganizations([]);
+      setTransactions([]);
+      setDevices([]);
+    });
+}, []);
 
   /* =========================
      LOAD DASHBOARD DATA
@@ -70,7 +88,7 @@ const SuperAdminDashboard = () => {
     axios
       .get('/api/superadmin/dashboard/summary', {
         params: {
-          organizationId: selectedOrg,
+          organizationId: selectedOrg?._id,
           year,
         },
       })
@@ -94,44 +112,53 @@ const SuperAdminDashboard = () => {
      NORMALIZE DEVICE DATA
      Month-wise device creation
   ========================= */
-  const deviceChartData = useMemo(() => {
-    const base = MONTHS.map((m) => ({
-      month: m,
-      devices: 0,
-    }));
+const deviceChartData = useMemo(() => {
+  const base = MONTHS.map((m, index) => ({
+    month: m,
+    devices: 0,
+  }));
 
-    deviceGrowth.forEach((item) => {
-      if (!item || typeof item.month !== 'number') return;
+  deviceGrowth.forEach((d) => {
+    if (!d.month) return;
 
-      const index = item.month - 1;
-      if (index >= 0 && index < 12) {
-        base[index].devices = item.count || 0;
-      }
-    });
+    const monthIndex = d.month - 1; // backend gives 1–12
 
-    return base;
-  }, [deviceGrowth]);
+    base[monthIndex].devices = d.count;
+  });
 
+  return base;
+}, [deviceGrowth]);
+
+console.log("Device Chart Data:", deviceChartData);
   /* =========================
      NORMALIZE REVENUE DATA
   ========================= */
-  const revenueChartData = useMemo(() => {
-    const base = MONTHS.map((m) => ({
-      month: m,
-      revenue: 0,
-    }));
+const revenueChartData = useMemo(() => {
+  const base = MONTHS.map((m, index) => ({
+    month: m,
+    revenue: 0,
+  }));
 
-    revenueGrowth.forEach((item) => {
-      if (!item || typeof item.month !== 'number') return;
+  transactions.forEach((t) => {
+    if (!t.created_at || !t.amount) return;
 
-      const index = item.month - 1;
-      if (index >= 0 && index < 12) {
-        base[index].revenue = item.total || 0;
-      }
-    });
+    // ✅ match selected org
+    if (t.org_id !== selectedOrg?.org_id) return;
 
-    return base;
-  }, [revenueGrowth]);
+    const date = new Date(t.created_at);
+    const monthIndex = date.getMonth(); // 0–11
+
+    base[monthIndex].revenue += Number(t.amount || 0);
+  });
+
+  return base;
+}, [transactions, selectedOrg]);
+   
+const totalRevenueFromTransactions = useMemo(() => {
+  return transactions
+    .filter((t) => t.org_id === selectedOrg?.org_id)  // ✅ CORRECT MATCH
+    .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+}, [transactions, selectedOrg]);
 
   /* =========================
      RENDER
@@ -147,48 +174,46 @@ const SuperAdminDashboard = () => {
             <p className="dashboard-subtitle">Platform overview and organization metrics</p>
           </div>
 
-          <div className="header-info">
-            <span className="current-date">
-              {new Date().toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </span>
-          </div>
-        </div>
+<div className="header-info">
 
-        {/* FILTERS */}
-        <div className="filters-section">
-          <div className="filter-group">
-            <label>Organization</label>
-            <select
-              className="filter-select"
-              value={selectedOrg}
-              onChange={(e) => setSelectedOrg(e.target.value)}
-            >
-              {organizations.map((org) => (
-                <option key={org._id} value={org._id}>
-                  {org.org_name}
-                </option>
-              ))}
-            </select>
-          </div>
+  <div className="header-filters">
+<select
+  className="filter-select"
+  value={selectedOrg?._id || ''}
+  onChange={(e) => {
+    const org = organizations.find(o => o._id === e.target.value);
+    setSelectedOrg(org);
+  }}
+>
+  {organizations.map((org) => (
+    <option key={org._id} value={org._id}>
+      {org.org_name}
+    </option>
+  ))}
+</select>
 
-          <div className="filter-group">
-            <label>Year</label>
-            <select
-              className="filter-select"
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-            >
-              {YEARS.map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-          </div>
+    <select
+      className="filter-select"
+      value={year}
+      onChange={(e) => setYear(Number(e.target.value))}
+    >
+      {YEARS.map((y) => (
+        <option key={y} value={y}>
+          {y}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  <span className="current-date">
+    {new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric'
+    })}
+  </span>
+
+</div>
         </div>
 
         {/* CONTENT */}
@@ -221,24 +246,14 @@ const SuperAdminDashboard = () => {
                 <div className="stat-footer">Deployed across platform</div>
               </div>
 
-              {/* <div className="stat-card stat-orgs">
-                <div className="stat-card-header">
-                  <MdBusiness className="stat-icon" />
-                  <span className="stat-badge">Active</span>
-                </div>
-                <div className="stat-value">{organizations.length}</div>
-                <p className="stat-label">Organizations</p>
-                <div className="stat-footer">On the platform</div>
-              </div> */}
-
               <div className="stat-card stat-growth">
                 <div className="stat-card-header">
                   <MdTrendingUp className="stat-icon" />
                   <span className="stat-badge">Growing</span>
                 </div>
-                <div className="stat-value">
-                  {revenueChartData.reduce((sum, m) => sum + (m.revenue || 0), 0).toLocaleString()}
-                </div>
+<div className="stat-value">
+  ₹{totalRevenueFromTransactions.toLocaleString('en-IN')}
+</div>
                 <p className="stat-label">Total Revenue (₹)</p>
                 <div className="stat-footer">Year to date</div>
               </div>
@@ -278,13 +293,15 @@ const SuperAdminDashboard = () => {
                         style={{ fontSize: '13px' }}
                       />
 
-                      <Tooltip
-                        contentStyle={{
-                          background: '#ffffff',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '8px'
-                        }}
-                      />
+<Tooltip
+  formatter={(value) => [value, "Devices"]}
+  labelFormatter={(label) => `Month: ${label}`}
+  contentStyle={{
+    background: '#ffffff',
+    border: '1px solid #e5e7eb',
+    borderRadius: '8px'
+  }}
+/>
 
                       <Bar
                         dataKey="devices"

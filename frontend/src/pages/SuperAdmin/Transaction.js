@@ -303,8 +303,8 @@ const Transaction = () => {
       const text = `
         ${t.txn_id || ''}
         ${t.device_id || ''}
-        ${t.payment_gateway || ''}
-        ${t.status || ''}
+        ${t.payment_mode || ''}
+        ${t.payment_status || ''}
       `.toLowerCase();
 
       const orgText = (t.org_id || '').toLowerCase();
@@ -321,10 +321,16 @@ const Transaction = () => {
   ========================= */
   const stats = useMemo(() => {
     const totalTransactions = transactions.length;
-    const totalRevenue = transactions.reduce((sum, t) => sum + (t.price || 0), 0);
-    const successCount = transactions.filter(
-      (t) => t.status?.toLowerCase() === 'success' || t.status?.toLowerCase() === 'completed'
-    ).length;
+const totalRevenue = transactions.reduce(
+  (sum, t) => sum + (t.amount || 0),
+  0
+);
+
+const successCount = transactions.filter(
+  (t) =>
+    t.payment_status?.toLowerCase() === 'success' ||
+    t.payment_status?.toLowerCase() === 'completed'
+).length;
 
     return {
       totalTransactions,
@@ -339,9 +345,6 @@ const Transaction = () => {
         <Header>
           <HeaderContent>
             <Title>Transactions</Title>
-            <Subtitle>
-              Monitor and manage all payment transactions across your organizations
-            </Subtitle>
           </HeaderContent>
         </Header>
 
@@ -405,9 +408,9 @@ const Transaction = () => {
                   <Th>Organization</Th>
                   <Th>Txn ID</Th>
                   <Th>Amount</Th>
-                  <Th>Gateway</Th>
+                  <Th>Payment Mode</Th>
                   <Th>Status</Th>
-                  <Th>Date</Th>
+                  <Th>Date & Time</Th>
                 </tr>
               </thead>
 
@@ -424,27 +427,32 @@ const Transaction = () => {
                       </code>
                     </Td>
                     <Td>
-                      <AmountCell>
-                        ₹{t.price ? t.price.toLocaleString('en-IN') : '0'} {t.currency}
-                      </AmountCell>
-                    </Td>
-                    <Td>
-                      <GatewayBadge>{t.payment_gateway || '—'}</GatewayBadge>
-                    </Td>
-                    <Td>
-                      <StatusBadge $status={t.status}>
-                        {t.status || '—'}
-                      </StatusBadge>
-                    </Td>
-                    <Td>
-                      {t.date
-                        ? new Date(t.date).toLocaleDateString('en-IN', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric',
-                          })
-                        : '—'}
-                    </Td>
+  <AmountCell>
+    ₹{t.amount ? t.amount.toLocaleString('en-IN') : '0'}
+  </AmountCell>
+</Td>
+
+<Td>
+  <GatewayBadge>{t.payment_mode || '—'}</GatewayBadge>
+</Td>
+
+<Td>
+  <StatusBadge $status={t.payment_status}>
+    {t.payment_status || '—'}
+  </StatusBadge>
+</Td>
+
+<Td>
+  {t.created_at
+    ? new Date(t.created_at).toLocaleString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '—'}
+</Td>
                   </Tr>
                 ))}
               </tbody>

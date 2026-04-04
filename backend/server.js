@@ -6,11 +6,12 @@
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import http from 'http'; // 🔥 ADDED
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, '.env') }); // 🔥 MUST be first
+dotenv.config({ path: path.join(__dirname, '.env') });
 
 import express from 'express';
 import cors from 'cors';
@@ -30,23 +31,19 @@ if (!process.env.JWT_SECRET) {
 }
 
 /* =========================
-   CORS CONFIG (BUILDER + DEV + PROD SAFE)
+   CORS CONFIG
 ========================= */
-
-// Explicit allowed origins (prod / fixed ports)
 const allowedOrigins = [
-  'http://localhost:3000', // normal React dev
-  process.env.CLIENT_URL,  // production frontend
+  'http://localhost:3000',
+  process.env.CLIENT_URL,
 ].filter(Boolean);
 
-// Builder runs on random localhost ports
 const isLocalhost = (origin) =>
   origin && origin.startsWith('http://localhost');
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (Postman, mobile apps)
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin) || isLocalhost(origin)) {
@@ -68,14 +65,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 /* =========================
-   LOGGER (DEV ONLY)
+   LOGGER
 ========================= */
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
 
 /* =========================
-   STATIC FILES (UPLOADS)
+   STATIC FILES
 ========================= */
 app.use(
   '/uploads',
@@ -83,13 +80,13 @@ app.use(
 );
 
 /* =========================
-   DATABASE CONNECTION
+   DATABASE
 ========================= */
 connectDB();
 
-/* =====================================================
-   ROUTES – SUPER ADMIN
-===================================================== */
+/* =========================
+   ROUTES
+========================= */
 import superAdminAuthRoutes from './routes/superadmin/superAdminAuthRoutes.js';
 import superAdminOrganizationRoutes from './routes/superadmin/superAdminOrganizationRoutes.js';
 import superAdminAdminRoutes from './routes/superadmin/superAdminAdminRoutes.js';
@@ -98,14 +95,10 @@ import superAdminCustomerRoutes from './routes/superadmin/superAdminCustomerRout
 import superAdminTransactionRoutes from './routes/superadmin/superAdminTransactionRoutes.js';
 import superAdminDashboardRoutes from './routes/superadmin/superAdminDashboardRoutes.js';
 
-/* =====================================================
-   ROUTES – HEAD ADMIN (ADMIN INCLUDED)
-===================================================== */
 import headAdminAuthRoutes from './routes/headadmin/authRoutes.js';
 import headAdminCustomerRoutes from './routes/headadmin/headAdminCustomerRoutes.js';
 import headAdminAdminRoutes from './routes/headadmin/headAdminAdminRoutes.js';
 import headAdminPurifierRoutes from './routes/headadmin/headAdminPurifierRoutes.js';
-import headAdminPurifierHistoryRoutes from './routes/headadmin/headAdminPurifierHistoryRoutes.js';
 import headAdminTransactionRoutes from './routes/headadmin/headAdminTransactionRoutes.js';
 import headAdminDashboardRoutes from './routes/headadmin/headAdminDashboardRoutes.js';
 import headAdminPlanRoutes from './routes/headadmin/headAdminPlanRoutes.js';
@@ -115,9 +108,9 @@ import headAdminTechnicianRoutes from './routes/headadmin/headAdminTechnicianRou
 import headAdminInstallationOrderRoutes from './routes/headadmin/headAdminInstallationOrderRoutes.js';
 import headAdminServiceRequestRoutes from './routes/headadmin/headAdminServiceRequestRoutes.js';
 
-/* =====================================================
-   API ROUTES – SUPER ADMIN
-===================================================== */
+/* =========================
+   SUPER ADMIN ROUTES
+========================= */
 app.use('/api/superadmin/auth', superAdminAuthRoutes);
 app.use('/api/superadmin/organizations', superAdminOrganizationRoutes);
 app.use('/api/superadmin/admins', superAdminAdminRoutes);
@@ -126,14 +119,13 @@ app.use('/api/superadmin/customers', superAdminCustomerRoutes);
 app.use('/api/superadmin/transactions', superAdminTransactionRoutes);
 app.use('/api/superadmin/dashboard', superAdminDashboardRoutes);
 
-/* =====================================================
-   API ROUTES – HEAD ADMIN (ADMIN INCLUDED)
-===================================================== */
+/* =========================
+   HEAD ADMIN ROUTES
+========================= */
 app.use('/api/headadmin/auth', headAdminAuthRoutes);
 app.use('/api/headadmin/customers', headAdminCustomerRoutes);
 app.use('/api/headadmin/admins', headAdminAdminRoutes);
 app.use('/api/headadmin/purifiers', headAdminPurifierRoutes);
-// app.use('/api/headadmin/purifiers/history', headAdminPurifierHistoryRoutes);
 app.use('/api/headadmin/transactions', headAdminTransactionRoutes);
 app.use('/api/headadmin/dashboard', headAdminDashboardRoutes);
 app.use('/api/headadmin/plans', headAdminPlanRoutes);
@@ -187,11 +179,18 @@ app.use((err, req, res, next) => {
 });
 
 /* =========================
-   SERVER START
+   SERVER START (🔥 FIXED)
 ========================= */
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const server = http.createServer(
+  {
+    maxHeaderSize: 32768, // 🔥 THIS FIXES 431
+  },
+  app
+);
+
+server.listen(PORT, () => {
   console.log(
     `🚀 Server running on port ${PORT} | Mode: ${
       process.env.NODE_ENV || 'development'

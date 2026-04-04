@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   gap: 32px;
-  padding: 32px 28px;
+  padding: 0px 28px;
   background: linear-gradient(135deg, #f8fafc 0%, #f3f4f6 100%);
   min-height: 100vh;
 }

@@ -21,7 +21,7 @@ import {
    STYLES - LAYOUT & CONTAINERS
 ========================= */
 const PageContainer = styled.div`
-  padding: 2rem;
+  padding: 1rem;
   background-color: #f8fafc;
   min-height: calc(100vh - 64px);
   font-family: 'Inter', -apple-system, sans-serif;
@@ -30,8 +30,8 @@ const PageContainer = styled.div`
 const HeaderSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
 
   @media (min-width: 768px) {
     flex-direction: row;

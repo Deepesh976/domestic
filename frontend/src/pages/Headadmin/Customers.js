@@ -9,7 +9,7 @@ import styled from 'styled-components';
 ========================= */
 
 const Page = styled.div`
-  padding: 32px;
+  padding: 0px 32px;
   background: #f8fafc;
   min-height: calc(100vh - 64px);
   display: flex;
@@ -194,8 +194,15 @@ const Td = styled.td`
 `;
 
 const Tr = styled.tr`
+  transition: all 0.2s ease;
+
+  &:nth-child(even) {
+    background: #f9fafb; /* light stripe */
+  }
+
   &:hover {
-    background: #f8fafc;
+    background: #eef2ff; /* 👈 highlight */
+    transform: scale(1.002);
   }
 
   &:last-child ${Td} {
@@ -589,9 +596,6 @@ const filtered = useMemo(() => {
         <HeaderSection>
           <HeaderContent>
             <Title>Customers</Title>
-            <Subtitle>
-              Manage customer accounts and verify KYC documents
-            </Subtitle>
           </HeaderContent>
         </HeaderSection>
 
@@ -611,21 +615,6 @@ const filtered = useMemo(() => {
           </StatCard>
         </StatsGrid>
 
-        {/* SEARCH AND DOWNLOAD */}
-        <Toolbar>
-          <Search
-            placeholder="🔍 Search by name, email, or phone..."
-            value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
-              setPage(1);
-            }}
-          />
-          <DownloadBtn onClick={downloadCSV}>
-            📥 Download CSV
-          </DownloadBtn>
-        </Toolbar>
-
         {/* TABLE */}
         {loading ? (
           <LoadingSpinner>Loading customers…</LoadingSpinner>
@@ -641,9 +630,32 @@ const filtered = useMemo(() => {
         ) : (
           <>
             <TableWrap>
-              <CardHeader>
-                <CardTitle>{filtered.length} Customer{filtered.length !== 1 ? 's' : ''}</CardTitle>
-              </CardHeader>
+<CardHeader style={{ 
+  display: 'flex', 
+  justifyContent: 'space-between', 
+  alignItems: 'center',
+  gap: '12px',
+  flexWrap: 'wrap'
+}}>
+  <CardTitle>
+    {filtered.length} Customer{filtered.length !== 1 ? 's' : ''}
+  </CardTitle>
+
+  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+    <Search
+      placeholder="🔍 Search..."
+      value={search}
+      onChange={(e) => {
+        setSearch(e.target.value);
+        setPage(1);
+      }}
+      style={{ width: '220px' }}
+    />
+    <DownloadBtn onClick={downloadCSV}>
+      📥 CSV
+    </DownloadBtn>
+  </div>
+</CardHeader>
 
               <Table>
                 <thead>
@@ -673,11 +685,14 @@ const filtered = useMemo(() => {
                           </span>
                         </NameCell>
                       </Td>
-                      <Td>
-                        <code style={{ fontSize: '0.85rem', color: '#64748b' }}>
-                          {c.email_address || '—'}
-                        </code>
-                      </Td>
+<Td>
+  <span style={{ 
+    color: '#2563eb', 
+    fontWeight: 500 
+  }}>
+    {c.email_address || '—'}
+  </span>
+</Td>
                       <Td>{c.phone_number || '—'}</Td>
                       <Td title={formatAddress(c.address)}>
                         {formatAddress(c.address)}

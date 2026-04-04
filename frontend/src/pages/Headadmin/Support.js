@@ -20,7 +20,7 @@ const Page = styled.div`
 const Container = styled.div`
   max-width: 800px;
   margin: 0 auto;
-  padding: 32px 24px 40px;
+  padding: 0px 24px 24px;
 `;
 
 const HeaderSection = styled.div`
@@ -400,9 +400,6 @@ export default function HeadAdminSupport() {
         <Container>
           <HeaderSection>
             <PageTitle>Support Details</PageTitle>
-            <PageDescription>
-              Manage your organization's support contact information
-            </PageDescription>
           </HeaderSection>
 
           {/* Stats Cards */}

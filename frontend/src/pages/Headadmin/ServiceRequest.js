@@ -21,7 +21,7 @@ const Page = styled.div`
 const Container = styled.div`
   max-width: 1500px;
   margin: 0 auto;
-  padding: 32px 24px 40px;
+  padding: 0px 24px 24px;
 `;
 
 const HeaderSection = styled.div`
@@ -177,6 +177,7 @@ const Th = styled.th`
 const Td = styled.td`
   padding: 16px;
   font-size: 14px;
+  const weight: 500;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
   color: #334155;
@@ -720,9 +721,6 @@ const handleRemove = async (id) => {
         <Container>
           <HeaderSection>
             <PageTitle>Service Requests</PageTitle>
-            <PageDescription>
-              Manage service requests and assign technicians for resolution
-            </PageDescription>
           </HeaderSection>
 
           {/* Stats Cards */}

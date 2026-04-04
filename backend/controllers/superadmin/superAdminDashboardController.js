@@ -58,32 +58,33 @@ export const getDashboardSummary = async (req, res) => {
        DEVICE GROWTH (MONTHLY)
        SOURCE: devices.createdAt
     ========================= */
-    const deviceGrowth = await Device.aggregate([
-      {
-        $match: {
-          org_id: orgId,
-          createdAt: {
-            $gte: startDate,
-            $lte: endDate,
-          },
-        },
+const deviceGrowth = await Device.aggregate([
+  {
+    $match: {
+      org_id: orgId,
+      created_at: {
+        $gte: startDate,
+        $lte: endDate,
       },
-      {
-        $group: {
-          _id: { $month: '$createdAt' },
-          count: { $sum: 1 },
-        },
+    },
+  },
+  {
+    $group: {
+      _id: {
+        month: { $month: { $toDate: '$created_at' } }  // ✅ FIX
       },
-      {
-        $project: {
-          _id: 0,
-          month: '$_id',
-          count: 1,
-        },
-      },
-      { $sort: { month: 1 } },
-    ]);
-
+      count: { $sum: 1 },
+    },
+  },
+  {
+    $project: {
+      _id: 0,
+      month: '$_id.month',
+      count: 1,
+    },
+  },
+  { $sort: { month: 1 } },
+]);
     /* =========================
        REVENUE GROWTH (MONTHLY)
     ========================= */

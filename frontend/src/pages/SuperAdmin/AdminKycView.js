@@ -79,7 +79,7 @@ const AdminKycView = () => {
           {kycImage ? (
             <Image
 src={`${
-  process.env.REACT_APP_API_URL || 'http://admin.smartroplus.in'
+  process.env.REACT_APP_API_URL || 'http://localhost:5000'
 }/uploads/kycadmins/${kycImage}`}
               alt="KYC"
             />

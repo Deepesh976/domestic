@@ -6,7 +6,7 @@
   .org-page {
     display: flex;
     flex-direction: column;
-    gap: 28px;
+    gap: 16px;
     padding: 0;
   }
 
@@ -38,10 +38,16 @@
     align-items: center;
     flex-wrap: wrap;
     gap: 20px;
-    padding-bottom: 20px;
+    padding-bottom: 12px;
     border-bottom: 2px solid #e2e8f0;
   }
 
+.org-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap;   /* ❌ prevent wrapping */
+}
   .org-title {
     font-size: 28px;
     font-weight: 800;
@@ -115,8 +121,8 @@
 
   /* Search Box */
   .org-search {
-    width: 100%;
-    max-width: 360px;
+    width: 260px;
+    max-width: 260px;
     padding: 11px 16px;
     border-radius: 8px;
     border: 2px solid #e2e8f0;
@@ -190,11 +196,12 @@
     background: #eff6ff;
   }
 
-  .org-table-body-cell {
-    padding: 14px 16px;
-    font-size: 13px;
-    color: #1a202c;
-  }
+.org-table-body-cell {
+  padding: 14px 16px;
+  font-size: 14px;
+  font-weight: 600; /* ✅ bold */
+  color: #0f172a;
+}
 
   .org-table-body-cell.empty {
     color: #94a3b8;

@@ -21,7 +21,7 @@
   const Container = styled.div`
     max-width: 1500px;
     margin: 0 auto;
-    padding: 32px 24px 40px;
+    padding: 0px 24px 24px;
   `;
 
   const HeaderSection = styled.div`
@@ -579,9 +579,6 @@
           <Container>
             <HeaderSection>
               <PageTitle>Installation Orders</PageTitle>
-              <PageDescription>
-                Manage installation tasks and track technician assignments
-              </PageDescription>
             </HeaderSection>
 
             {/* Stats Cards */}

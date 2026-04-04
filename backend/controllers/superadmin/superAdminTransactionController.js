@@ -8,18 +8,17 @@ const getTransactions = async (req, res) => {
     const transactions = await RechargeTransaction.find()
       .sort({ date: -1 });
 
-    const formatted = transactions.map((t) => ({
-      _id: t._id,
-      org_id: t.org_id || '—',
-      user_id: t.user_id || '—',
-      device_id: t.device_id || '—',
-      txn_id: t.txn_id || '—',
-      price: t.price || 0,
-      currency: t.currency || 'INR',
-      payment_gateway: t.payment_gateway || '—',
-      status: t.status || '—',
-      date: t.date,
-    }));
+const formatted = transactions.map((t) => ({
+  _id: t._id,
+  org_id: t.org_id || '—',
+  user_id: t.user_id || '—',
+  txn_id: t.txn_id || '—',
+
+  amount: t.amount || 0,
+  payment_mode: t.payment_mode || '—',
+  payment_status: t.payment_status || '—',
+  created_at: t.created_at,
+}));
 
     res.status(200).json(formatted);
   } catch (error) {

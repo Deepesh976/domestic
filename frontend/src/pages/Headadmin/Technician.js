@@ -18,7 +18,7 @@ const Page = styled.div`
 const Container = styled.div`
   max-width: 1400px;
   margin: 0 auto;
-  padding: 32px 24px 40px;
+  padding: 0px 24px 24px;
 `;
 
 const HeaderSection = styled.div`
@@ -582,10 +582,7 @@ await updateTechnician(tech._id, {
       <Page>
         <Container>
           <HeaderSection>
-            <PageTitle>Technicians</PageTitle>
-            <PageDescription>
-              Manage and monitor your technician workforce
-            </PageDescription>
+            <PageTitle>All Technicians</PageTitle>
           </HeaderSection>
 
           {/* Stats Cards */}

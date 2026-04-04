@@ -17,8 +17,8 @@ import SuperAdminNavbar from '../../components/Navbar/SuperAdminNavbar';
 const Page = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 24px;
+  gap: 16px;
+  padding: 8px 24px 24px; 
 `;
 
 const TopBar = styled.div`
@@ -27,7 +27,7 @@ const TopBar = styled.div`
   align-items: center;
   flex-wrap: wrap;
   gap: 20px;
-  padding-bottom: 20px;
+  padding-bottom: 12px;
   border-bottom: 2px solid #e2e8f0;
 `;
 
@@ -42,7 +42,7 @@ const Title = styled.h2`
 const Actions = styled.div`
   display: flex;
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 `;
 
 const Button = styled.button`
@@ -100,7 +100,7 @@ const SearchBox = styled.input`
   padding: 11px 16px;
   border-radius: 8px;
   border: 2px solid #e2e8f0;
-  width: 320px;
+  width: 240px;
   font-size: 13px;
   font-weight: 500;
   color: #1a202c;
@@ -163,6 +163,7 @@ const Td = styled.td`
   padding: 14px 16px;
   border-top: 1px solid #e2e8f0;
   font-size: 13px;
+  font-weight: 600; 
   color: #1a202c;
   text-align: center;
   vertical-align: middle;
@@ -520,6 +521,13 @@ const OrgDropdownList = styled.div`
     background: #cbd5e1;
     border-radius: 3px;
   }
+`;
+
+const RightSection = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: nowrap; /* 🔥 force single line */
 `;
 
 const OrgDropdownItem = styled.div`
@@ -1027,44 +1035,43 @@ const AdminInfo = () => {
     <SuperAdminNavbar>
       <Page>
         {/* ================= TOP BAR ================= */}
-        <TopBar>
-          <Title>Admins / Head Admins</Title>
+ <TopBar>
+  <Title>All Admins</Title>
 
-          <Actions>
-            <Button onClick={openCreateModal}>Create</Button>
+  <RightSection>
+    <SearchBox
+      placeholder="Search by org name / org ID"
+      value={orgSearch}
+      onChange={(e) => setOrgSearch(e.target.value)}
+    />
 
-            <Button
-              variant="edit"
-              disabled={!selectedId}
-              onClick={openEditModal}
-            >
-              Edit
-            </Button>
+    <SearchBox
+      placeholder="Search by name / email / phone / role"
+      value={adminSearch}
+      onChange={(e) => setAdminSearch(e.target.value)}
+    />
 
-            <Button
-              variant="delete"
-              disabled={!selectedId}
-              onClick={handleDelete}
-            >
-              Delete
-            </Button>
-          </Actions>
-        </TopBar>
+    <Actions>
+      <Button onClick={openCreateModal}>Create</Button>
 
-        {/* ================= SEARCH ================= */}
-        <SearchRow>
-          <SearchBox
-            placeholder="Search by org name / org ID"
-            value={orgSearch}
-            onChange={(e) => setOrgSearch(e.target.value)}
-          />
+      <Button
+        variant="edit"
+        disabled={!selectedId}
+        onClick={openEditModal}
+      >
+        Edit
+      </Button>
 
-          <SearchBox
-            placeholder="Search by name / email / phone / role"
-            value={adminSearch}
-            onChange={(e) => setAdminSearch(e.target.value)}
-          />
-        </SearchRow>
+      <Button
+        variant="delete"
+        disabled={!selectedId}
+        onClick={handleDelete}
+      >
+        Delete
+      </Button>
+    </Actions>
+  </RightSection>
+</TopBar>
 
         {/* ================= TABLE ================= */}
         <Card>
@@ -1501,7 +1508,7 @@ const AdminInfo = () => {
               {kycViewerData.kyc_details?.kyc_image && (
 <KycImage
   src={`${
-    process.env.REACT_APP_API_URL || 'http://admin.smartroplus.in'
+    process.env.REACT_APP_API_URL || 'http://localhost:5000'
   }/uploads/kycadmins/${kycViewerData.kyc_details.kyc_image}`}
 />
               )}

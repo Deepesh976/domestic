@@ -212,31 +212,46 @@ const SuperAdminOrg = () => {
     <SuperAdminNavbar>
       <div className="org-page">
         {/* HEADER */}
-        <div className="org-header">
-          <h1 className="org-title">Organizations</h1>
+<div className="org-header">
+  <h1 className="org-title">Organizations</h1>
 
-          <div className="org-actions">
-            <button className="org-button primary" onClick={openCreateModal}>
-              <FiPlus size={16} /> Create
-            </button>
+  <div className="org-header-right">
 
-            <button
-              className="org-button edit"
-              disabled={!selectedId}
-              onClick={openEditModal}
-            >
-              <FiEdit2 size={16} /> Edit
-            </button>
+    <input
+      className="org-search"
+      type="text"
+      placeholder="Search organizations..."
+      value={search}
+      onChange={(e) => {
+        setSearch(e.target.value);
+        setPage(1);
+      }}
+    />
 
-            <button
-              className="org-button delete"
-              disabled={!selectedId}
-              onClick={handleDelete}
-            >
-              <FiTrash2 size={16} /> Delete
-            </button>
-          </div>
-        </div>
+    <div className="org-actions">
+      <button className="org-button primary" onClick={openCreateModal}>
+        <FiPlus size={16} /> Create
+      </button>
+
+      <button
+        className="org-button edit"
+        disabled={!selectedId}
+        onClick={openEditModal}
+      >
+        <FiEdit2 size={16} /> Edit
+      </button>
+
+      <button
+        className="org-button delete"
+        disabled={!selectedId}
+        onClick={handleDelete}
+      >
+        <FiTrash2 size={16} /> Delete
+      </button>
+    </div>
+
+  </div>
+</div>
 
         {/* SEARCH */}
         <input

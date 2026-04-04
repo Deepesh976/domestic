@@ -18,7 +18,7 @@ import {
    STYLES - LAYOUT & CONTAINERS
 ========================= */
 const PageContainer = styled.div`
-  padding: 2rem;
+  padding: 0.5rem 1rem; 
   background-color: #f8fafc;
   min-height: calc(100vh - 64px);
   font-family: 'Inter', -apple-system, sans-serif;
@@ -27,8 +27,8 @@ const PageContainer = styled.div`
 const HeaderSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 
   @media (min-width: 768px) {
     flex-direction: row;
@@ -506,7 +506,7 @@ export default function RechargedPlan() {
                           {r.status || 'unknown'}
                         </StatusBadge>
                       </Td>
-                      <CreatedOnTd>{formatIST(r.createdAt)}</CreatedOnTd>
+                      <CreatedOnTd>{formatIST(r.created_at)}</CreatedOnTd>
                     </tr>
                   ))}
                 </tbody>

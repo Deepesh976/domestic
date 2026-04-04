@@ -62,14 +62,15 @@ export const getRechargedPlans = async (req, res) => {
          EXTRACT PLAN NAME
       ========================= */
       {
-        $addFields: {
-          plan_name: {
-            $ifNull: [
-              { $arrayElemAt: ['$active_plan_info.name', 0] },
-              'Unknown Plan',
-            ],
-          },
-        },
+$addFields: {
+  plan_name: {
+    $ifNull: [
+      { $arrayElemAt: ['$active_plan_info.name', 0] },
+      'Unknown Plan',
+    ],
+  },
+  createdAt: '$created_at'   // 👈 ADD THIS
+},
       },
 
       /* =========================

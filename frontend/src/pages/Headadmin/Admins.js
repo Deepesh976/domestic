@@ -7,7 +7,7 @@ import styled from 'styled-components';
    STYLES
 ========================= */
 const Page = styled.div`
-  padding: 32px;
+  padding: 0px32px;
   background: #f8fafc;
   min-height: calc(100vh - 64px);
   display: flex;
@@ -150,9 +150,10 @@ const Td = styled.td`
   font-size: 0.9rem;
   color: #334155;
   border-bottom: 1px solid #e5e7eb;
+  font-weight: 500;   /* 👈 add this */
 
   &:first-child {
-    font-weight: 500;
+    font-weight: 600;
     color: #1e293b;
   }
 `;
@@ -556,6 +557,7 @@ export default function Admins() {
   const [kycImage, setKycImage] = useState(null);
   const [formErrors, setFormErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
+  const [search, setSearch] = useState('');
 
   const [form, setForm] = useState({
     username: '',
@@ -591,6 +593,15 @@ export default function Admins() {
   useEffect(() => {
     fetchAdmins();
   }, []);
+
+
+  const filteredAdmins = useMemo(() => {
+  return admins.filter((a) =>
+    `${a.username} ${a.email} ${a.phone_number}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+}, [admins, search]);
 
   /* =========================
      MODAL HANDLERS
@@ -754,13 +765,7 @@ export default function Admins() {
         <HeaderSection>
           <HeaderContent>
             <Title>Organization Admins</Title>
-            <Subtitle>Create and manage admin accounts</Subtitle>
           </HeaderContent>
-          <Actions>
-            <CreateButton onClick={openCreateModal}>
-              + Create Admin
-            </CreateButton>
-          </Actions>
         </HeaderSection>
 
         {/* STATS */}
@@ -789,9 +794,37 @@ export default function Admins() {
           </Empty>
         ) : (
           <DataCard>
-            <CardHeader>
-              <CardTitle>{admins.length} Admin{admins.length !== 1 ? 's' : ''}</CardTitle>
-            </CardHeader>
+<CardHeader
+  style={{
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '12px',
+    flexWrap: 'wrap'
+  }}
+>
+  <CardTitle>
+    {filteredAdmins.length} Admin{filteredAdmins.length !== 1 ? 's' : ''}
+  </CardTitle>
+
+  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+    <input
+      placeholder="🔍 Search..."
+      value={search}
+      onChange={(e) => setSearch(e.target.value)}
+      style={{
+        padding: '8px 12px',
+        borderRadius: '6px',
+        border: '1px solid #cbd5e1',
+        width: '200px'
+      }}
+    />
+
+    <CreateButton onClick={openCreateModal}>
+      + Create
+    </CreateButton>
+  </div>
+</CardHeader>
 
             <Table>
               <thead>
@@ -814,7 +847,9 @@ export default function Admins() {
                     <Td>
                       <NameCell>
                         <Avatar>{getInitials(a.username)}</Avatar>
-                        <span>{a.username || '—'}</span>
+                        <span style={{ fontWeight: 600 }}>
+  {a.username || '—'}
+</span>
                       </NameCell>
                     </Td>
                     <Td>

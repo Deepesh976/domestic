@@ -52,17 +52,17 @@ const device = await Device.create({
 ========================= */
 const getDevices = async (req, res) => {
   try {
-const devices = await Device.find(
-  {},
-  {
-    org_id: 1,
-    mac_id: 1,
-    serial_number: 1,
-    createdAt: 1,
-  }
-).sort({ createdAt: -1 });
+    const devices = await Device.find().sort({ createdAt: -1 });
 
-    return res.status(200).json(devices);
+    const formatted = devices.map((d) => ({
+      _id: d._id,
+      org_id: d.org_id,
+      mac_id: d.mac_id,
+      serial_number: d.serial_number,
+      created_at: d.createdAt, // ✅ consistent naming
+    }));
+
+    return res.status(200).json(formatted);
   } catch (error) {
     console.error('❌ Get devices error:', error);
     return res.status(500).json({
@@ -71,4 +71,27 @@ const devices = await Device.find(
   }
 };
 
-export { createDevice, getDevices };
+const deleteDevice = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const device = await Device.findById(id);
+
+    if (!device) {
+      return res.status(404).json({ message: 'Device not found' });
+    }
+
+    await Device.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      message: 'Device deleted successfully',
+    });
+  } catch (error) {
+    console.error('❌ Delete device error:', error);
+    return res.status(500).json({
+      message: 'Failed to delete device',
+    });
+  }
+};
+
+export { createDevice, getDevices, deleteDevice };

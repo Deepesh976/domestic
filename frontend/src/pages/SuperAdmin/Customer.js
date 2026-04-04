@@ -9,8 +9,8 @@ import SuperAdminNavbar from '../../components/Navbar/SuperAdminNavbar';
 const Page = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 28px;
-  padding: 32px;
+  gap: 16px;
+  padding: 24px 32px;
   background: #f8fafc;
   min-height: 100vh;
 `;
@@ -18,8 +18,9 @@ const Page = styled.div`
 const Header = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 24px;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 
   @media (max-width: 768px) {
     flex-direction: column;
@@ -48,7 +49,7 @@ const StatsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
-  margin-bottom: 4px;
+  margin-bottom: 0px;
 `;
 
 const StatCard = styled.div`
@@ -81,7 +82,7 @@ const StatValue = styled.p`
 
 const SearchSection = styled.div`
   display: flex;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
   align-items: center;
 
@@ -132,6 +133,17 @@ const CardHeader = styled.div`
   align-items: center;
 `;
 
+const SearchWrapper = styled.div`
+  display: flex;
+  gap: 12px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: column;
+  }
+`;
+
 const CardTitle = styled.h3`
   margin: 0;
   font-size: 0.95rem;
@@ -160,9 +172,10 @@ const Th = styled.th`
 
 const Td = styled.td`
   padding: 14px 16px;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: #334155;
   border-bottom: 1px solid #e5e7eb;
+  font-weight: 500;
 
   &:first-child {
     font-weight: 500;
@@ -306,17 +319,9 @@ const filteredCustomers = useMemo(() => {
 
   return (
     <SuperAdminNavbar>
+      
       <Page>
-        <Header>
-          <HeaderContent>
-            <Title>Customers</Title>
-            <Subtitle>
-              Manage and view all customer accounts across your organizations
-            </Subtitle>
-          </HeaderContent>
-        </Header>
-
-        {/* STATS */}
+                {/* STATS */}
         <StatsGrid>
           <StatCard>
             <StatLabel>Total Customers</StatLabel>
@@ -328,28 +333,24 @@ const filteredCustomers = useMemo(() => {
               {new Set(customers.map((c) => c.org_id)).size}
             </StatValue>
           </StatCard>
-          <StatCard>
-            <StatLabel>Verified Email</StatLabel>
-            <StatValue>
-              {customers.filter((c) => c.email && c.email !== '—').length}
-            </StatValue>
-          </StatCard>
         </StatsGrid>
+<Header>
+  <Title>Customers</Title>
 
-        {/* SEARCH */}
-        <SearchSection>
-          <SearchBox
-            placeholder="🔍 Search by name, email, or phone..."
-            value={customerSearch}
-            onChange={(e) => setCustomerSearch(e.target.value)}
-          />
+  <SearchWrapper>
+    <SearchBox
+      placeholder="🔍 Search by name, email, or phone..."
+      value={customerSearch}
+      onChange={(e) => setCustomerSearch(e.target.value)}
+    />
 
-          <SearchBox
-            placeholder="🏢 Search by organization ID..."
-            value={orgSearch}
-            onChange={(e) => setOrgSearch(e.target.value)}
-          />
-        </SearchSection>
+    <SearchBox
+      placeholder="🏢 Search by organization ID..."
+      value={orgSearch}
+      onChange={(e) => setOrgSearch(e.target.value)}
+    />
+  </SearchWrapper>
+</Header>
 
         {/* TABLE */}
         <DataCard>

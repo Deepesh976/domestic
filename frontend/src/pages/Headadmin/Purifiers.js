@@ -24,7 +24,7 @@ import {
    STYLES - LAYOUT & CONTAINERS
 ========================= */
 const PageContainer = styled.div`
-  padding: 2rem;
+  padding: 1rem 2rem;
   background-color: #f8fafc;
   min-height: calc(100vh - 64px);
   font-family: 'Inter', -apple-system, sans-serif;
@@ -33,8 +33,8 @@ const PageContainer = styled.div`
 const HeaderSection = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
 
   @media (min-width: 768px) {
     flex-direction: row;
@@ -235,6 +235,7 @@ const Th = styled.th`
 const Td = styled.td`
   padding: 1rem;
   font-size: 0.875rem;
+  font-weight: 500;
   color: #334155;
   border-bottom: 1px solid #f1f5f9;
   vertical-align: middle;
