@@ -29,7 +29,52 @@ const orgPurifierSchema = new mongoose.Schema(
     last_service_date: Date,
 
     connectivity_status: String,
-    installed_location: String,
+    installed_location: {
+  house_flat_no: {
+    type: String,
+    default: '',
+  },
+
+  street: {
+    type: String,
+    default: '',
+  },
+
+  area: {
+    type: String,
+    default: '',
+  },
+
+  district: {
+    type: String,
+    default: '',
+  },
+
+  city: {
+    type: String,
+    default: '',
+  },
+
+  state: {
+    type: String,
+    default: '',
+  },
+
+  postal_code: {
+    type: String,
+    default: '',
+  },
+
+  code: {
+    type: String,
+    default: '',
+  },
+
+  country: {
+    type: String,
+    default: '',
+  },
+},
 
     firmware_version: {
       type: String,

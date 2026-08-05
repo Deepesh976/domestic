@@ -135,6 +135,29 @@ const DownloadBtn = styled.button`
   }
 `;
 
+const CreateBtn = styled.button`
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
 const TableWrap = styled.div`
   background: white;
   border-radius: 12px;
@@ -407,6 +430,241 @@ const PageBtn = styled.button`
 `;
 
 /* =========================
+   MODAL STYLES
+========================= */
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+`;
+
+const ModalHeader = styled.div`
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const ModalTitle = styled.h2`
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+`;
+
+const CloseBtn = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #1e293b;
+  }
+`;
+
+const ModalBody = styled.div`
+  padding: 24px;
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 18px;
+`;
+
+const FormLabel = styled.label`
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+`;
+
+const FormRow = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const AddressSection = styled.div`
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 18px;
+`;
+
+const AddressTitle = styled.h3`
+  margin: 0 0 14px 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e293b;
+`;
+
+const ModalFooter = styled.div`
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+`;
+
+const CancelBtn = styled.button`
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+  }
+`;
+
+const SubmitBtn = styled.button`
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const ActionCell = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+`;
+
+const EditActionBtn = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: transform 0.2s ease, color 0.2s ease;
+  color: #3b82f6;
+
+  &:hover {
+    transform: scale(1.2);
+    color: #1d4ed8;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
+const DeleteActionBtn = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: transform 0.2s ease, color 0.2s ease;
+  color: #ef4444;
+
+  &:hover {
+    transform: scale(1.2);
+    color: #dc2626;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+`;
+
+/* =========================
    COMPONENT
 ========================= */
 
@@ -417,6 +675,26 @@ export default function Customers() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
+  const [formLoading, setFormLoading] = useState(false);
+  const [editingUserId, setEditingUserId] = useState(null);
+
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    phone_number: '',
+    email_address: '',
+    user_id: '',
+address: {
+  line: '',
+  street: '',
+  area: '',
+  city: '',
+  state: '',
+  code: '',
+  country: '',
+}
+  });
 
   const PAGE_SIZE = 8;
 
@@ -440,17 +718,18 @@ export default function Customers() {
      ADDRESS FORMATTER
   ========================= */
 
-  const formatAddress = (address = {}) =>
-    [
-      address.flat_no,
-      address.area,
-      address.city,
-      address.state,
-      address.country &&
-        `${address.country}${address.postal_code ? ' - ' + address.postal_code : ''}`,
-    ]
-      .filter(Boolean)
-      .join(', ') || '—';
+const formatAddress = (address = {}) =>
+  [
+    address.line,
+    address.street,
+    address.area,
+    address.city,
+    address.state,
+    address.country &&
+      `${address.country}${address.code ? ' - ' + address.code : ''}`,
+  ]
+    .filter(Boolean)
+    .join(', ') || '—';
 
   /* =========================
      SEARCH + PAGINATION
@@ -542,47 +821,132 @@ const filtered = useMemo(() => {
   };
 
   /* =========================
-     UPDATE HANDLERS
+     FORM HANDLERS
   ========================= */
 
-  const updateLocal = (id, field, value) => {
-    setCustomers((prev) =>
-      prev.map((c) =>
-        c._id === id
-          ? field === 'kyc'
-            ? {
-                ...c,
-                kyc_details: {
-                  ...(c.kyc_details || {}),
-                  kyc_approval_status: value,
-                },
-              }
-            : { ...c, user_device_status: value }
-          : c
-      )
-    );
+  const handleFormChange = (field, value) => {
+    if (field.startsWith('address.')) {
+      const addressField = field.split('.')[1];
+      setFormData((prev) => ({
+        ...prev,
+        address: {
+          ...prev.address,
+          [addressField]: value,
+        },
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: value,
+      }));
+    }
   };
 
-  const submitUpdate = async (customer) => {
+  const handleSaveUser = async (e) => {
+    e.preventDefault();
     try {
-      if (customer.kyc_details?.kyc_approval_status) {
-        await axios.patch(
-          `/api/headadmin/customers/${customer._id}/kyc`,
-          { status: customer.kyc_details.kyc_approval_status }
-        );
+      setFormLoading(true);
+
+const payload = {
+  name: `${formData.first_name} ${formData.last_name}`,
+
+  email: formData.email_address,
+  phone: formData.phone_number,
+
+  address: {
+    line: formData.address.line,
+    street: formData.address.street,
+    area: formData.address.area,
+    city: formData.address.city,
+    state: formData.address.state,
+    code: formData.address.code,
+    country: formData.address.country,
+  },
+};
+
+      if (editingUserId) {
+        await axios.put(`/api/headadmin/customers/${editingUserId}`, payload);
+        alert('User updated successfully');
+      } else {
+        await axios.post('/api/headadmin/customers', payload);
+        alert('User created successfully');
       }
 
-      if (customer.user_device_status) {
-        await axios.patch(
-          `/api/headadmin/customers/${customer._id}/device-status`,
-          { status: customer.user_device_status }
-        );
-      }
-
+      resetForm();
+      setShowModal(false);
       fetchCustomers();
-      alert('Customer updated');
-    } catch {
-      alert('Update failed');
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to save user');
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      first_name: '',
+      last_name: '',
+      phone_number: '',
+      email_address: '',
+      user_id: '',
+      address: {
+  line: '',
+  street: '',
+  area: '',
+  city: '',
+  state: '',
+  code: '',
+  country: '',
+},
+    });
+    setEditingUserId(null);
+  };
+
+  const handleEditUser = (user) => {
+    setFormData({
+      first_name: user.user_name?.first_name || '',
+      last_name: user.user_name?.last_name || '',
+      phone_number: user.phone_number || '',
+      email_address: user.email_address || '',
+      user_id: user.user_id || '',
+address: {
+  line: user.address?.line || '',
+  street: user.address?.street || '',
+  area: user.address?.area || '',
+  city: user.address?.city || '',
+  state: user.address?.state || '',
+  code: user.address?.code || '',
+  country: user.address?.country || '',
+},
+    });
+    setEditingUserId(user._id);
+    setShowModal(true);
+  };
+
+  const handleDeleteUser = async (userId, userName) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${userName}? This action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+      await axios.delete(`/api/headadmin/customers/${userId}`);
+      alert('User deleted successfully');
+      fetchCustomers();
+    } catch (error) {
+      alert(error.response?.data?.message || 'Failed to delete user');
+    }
+  };
+
+  const openCreateModal = () => {
+    resetForm();
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    if (!formLoading) {
+      resetForm();
+      setShowModal(false);
     }
   };
 
@@ -651,6 +1015,10 @@ const filtered = useMemo(() => {
       }}
       style={{ width: '220px' }}
     />
+
+      <CreateBtn onClick={openCreateModal}>
+    + Create User
+  </CreateBtn>
     <DownloadBtn onClick={downloadCSV}>
       📥 CSV
     </DownloadBtn>
@@ -665,9 +1033,7 @@ const filtered = useMemo(() => {
                     <Th>Email</Th>
                     <Th>Phone</Th>
                     <Th>Address</Th>
-                    {/* <Th>KYC Status</Th>
-                    <Th>Device Status</Th> */}
-                    {/* <Th>Action</Th> */}
+                    <Th>Actions</Th>
                   </tr>
                 </thead>
 
@@ -685,52 +1051,36 @@ const filtered = useMemo(() => {
                           </span>
                         </NameCell>
                       </Td>
-<Td>
-  <span style={{ 
-    color: '#2563eb', 
-    fontWeight: 500 
-  }}>
-    {c.email_address || '—'}
-  </span>
-</Td>
+                      <Td>
+                        <span style={{ color: '#2563eb', fontWeight: 500 }}>
+                          {c.email_address || '—'}
+                        </span>
+                      </Td>
                       <Td>{c.phone_number || '—'}</Td>
                       <Td title={formatAddress(c.address)}>
                         {formatAddress(c.address)}
                       </Td>
-
-
-                      {/* <Td>
-                        <Select
-                          value={c.kyc_details?.kyc_approval_status || ''}
-                          onChange={(e) =>
-                            updateLocal(c._id, 'kyc', e.target.value)
-                          }
-                        >
-                          <option value="">pending</option>
-                          <option value="approved">approved</option>
-                          <option value="rejected">rejected</option>
-                        </Select>
-                      </Td>
-
                       <Td>
-                        <Select
-                          value={c.user_device_status || ''}
-                          onChange={(e) =>
-                            updateLocal(c._id, 'device', e.target.value)
-                          }
-                        >
-                          <option value="">—</option>
-                          <option value="linked">linked</option>
-                          <option value="unlinked">unlinked</option>
-                          <option value="declined">declined</option>
-                        </Select>
-                      </Td> */}
-
-                      {/* <Td>
-                        <ActionBtn onClick={() => submitUpdate(c)}>
-                          Submit
-                        </ActionBtn>
-                      </Td> */}
+                        <ActionCell>
+                          <EditActionBtn
+                            onClick={() => handleEditUser(c)}
+                            title="Edit user"
+                          >
+                            ✏️
+                          </EditActionBtn>
+                          <DeleteActionBtn
+                            onClick={() =>
+                              handleDeleteUser(
+                                c._id,
+                                `${c.user_name?.first_name || ''} ${c.user_name?.last_name || ''}`.trim()
+                              )
+                            }
+                            title="Delete user"
+                          >
+                            🗑️
+                          </DeleteActionBtn>
+                        </ActionCell>
+                      </Td>
                     </Tr>
                   ))}
                 </tbody>
@@ -751,6 +1101,190 @@ const filtered = useMemo(() => {
               </Pagination>
             )}
           </>
+        )}
+
+        {/* USER MODAL (CREATE/EDIT) */}
+        {showModal && (
+          <ModalOverlay onClick={closeModal}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <ModalTitle>
+                  {editingUserId ? 'Edit User' : 'Create New User'}
+                </ModalTitle>
+                <CloseBtn
+                  onClick={closeModal}
+                  disabled={formLoading}
+                >
+                  ×
+                </CloseBtn>
+              </ModalHeader>
+
+              <ModalBody>
+                <form onSubmit={handleSaveUser}>
+                  {/* NAME ROW */}
+                  <FormRow>
+                    <FormGroup>
+                      <FormLabel>First Name *</FormLabel>
+                      <FormInput
+                        type="text"
+                        required
+                        value={formData.first_name}
+                        onChange={(e) =>
+                          handleFormChange('first_name', e.target.value)
+                        }
+                        placeholder="John"
+                      />
+                    </FormGroup>
+                    <FormGroup>
+                      <FormLabel>Last Name *</FormLabel>
+                      <FormInput
+                        type="text"
+                        required
+                        value={formData.last_name}
+                        onChange={(e) =>
+                          handleFormChange('last_name', e.target.value)
+                        }
+                        placeholder="Doe"
+                      />
+                    </FormGroup>
+                  </FormRow>
+
+                  {/* CONTACT INFO */}
+                  <FormGroup>
+                    <FormLabel>Email Address *</FormLabel>
+                    <FormInput
+                      type="email"
+                      required
+                      value={formData.email_address}
+                      onChange={(e) =>
+                        handleFormChange('email_address', e.target.value)
+                      }
+                      placeholder="john@example.com"
+                    />
+                  </FormGroup>
+
+                  <FormGroup>
+                    <FormLabel>Phone Number *</FormLabel>
+                    <FormInput
+                      type="tel"
+                      required
+                      value={formData.phone_number}
+                      onChange={(e) =>
+                        handleFormChange('phone_number', e.target.value)
+                      }
+                      placeholder="+91 9876543210"
+                    />
+                  </FormGroup>
+
+                  {/* ADDRESS SECTION */}
+                  <AddressSection>
+                    <AddressTitle>Address</AddressTitle>
+
+<FormLabel>Line</FormLabel>
+<FormInput
+  type="text"
+  value={formData.address.line}
+  onChange={(e) =>
+    handleFormChange('address.line', e.target.value)
+  }
+  placeholder="House / Building"
+/>
+
+<FormLabel>Street</FormLabel>
+<FormInput
+  type="text"
+  value={formData.address.street}
+  onChange={(e) =>
+    handleFormChange('address.street', e.target.value)
+  }
+  placeholder="Street Name"
+/>
+
+                    <FormGroup>
+                      <FormLabel>Area</FormLabel>
+                      <FormInput
+                        type="text"
+                        value={formData.address.area}
+                        onChange={(e) =>
+                          handleFormChange('address.area', e.target.value)
+                        }
+                        placeholder="Market Street Area"
+                      />
+                    </FormGroup>
+
+                    <FormRow>
+                      <FormGroup>
+                        <FormLabel>City</FormLabel>
+                        <FormInput
+                          type="text"
+                          value={formData.address.city}
+                          onChange={(e) =>
+                            handleFormChange('address.city', e.target.value)
+                          }
+                          placeholder="New York"
+                        />
+                      </FormGroup>
+                      <FormGroup>
+                        <FormLabel>State</FormLabel>
+                        <FormInput
+                          type="text"
+                          value={formData.address.state}
+                          onChange={(e) =>
+                            handleFormChange('address.state', e.target.value)
+                          }
+                          placeholder="NY"
+                        />
+                      </FormGroup>
+                    </FormRow>
+
+                    <FormRow>
+                      <FormGroup>
+                        <FormLabel>Country</FormLabel>
+                        <FormInput
+                          type="text"
+                          value={formData.address.country}
+                          onChange={(e) =>
+                            handleFormChange('address.country', e.target.value)
+                          }
+                          placeholder="United States"
+                        />
+                      </FormGroup>
+<FormLabel>Pincode</FormLabel>
+<FormInput
+  type="text"
+  value={formData.address.code}
+  onChange={(e) =>
+    handleFormChange('address.code', e.target.value)
+  }
+  placeholder="500029"
+/>
+                    </FormRow>
+                  </AddressSection>
+                </form>
+              </ModalBody>
+
+              <ModalFooter>
+                <CancelBtn
+                  onClick={closeModal}
+                  disabled={formLoading}
+                >
+                  Cancel
+                </CancelBtn>
+                <SubmitBtn
+                  onClick={handleSaveUser}
+                  disabled={formLoading}
+                >
+                  {formLoading
+                    ? editingUserId
+                      ? 'Updating...'
+                      : 'Creating...'
+                    : editingUserId
+                    ? 'Update User'
+                    : 'Create User'}
+                </SubmitBtn>
+              </ModalFooter>
+            </ModalContent>
+          </ModalOverlay>
         )}
       </Page>
     </HeadAdminNavbar>

@@ -1,30 +1,30 @@
 import express from 'express';
 import auth from '../../middleware/auth.js';
 import roleMiddleware from '../../middleware/roleMiddleware.js';
-
 import kycCustomerUpload from '../../middleware/kycCustomerUpload.js';
+
 import {
   getCustomers,
+  getCustomerById,
+  createCustomer,
+  deleteCustomer,
+  updateCustomer,
   updateKycStatus,
   updateDeviceStatus,
   uploadCustomerKyc,
 } from '../../controllers/headadmin/headAdminCustomerController.js';
 
-
 const router = express.Router();
 
 /* =====================================================
-   CUSTOMER ROUTES
-   - HeadAdmin: full access
-   - Admin: read-only access
+   HEAD ADMIN – CUSTOMER ROUTES (FINAL)
 ===================================================== */
 
-/**
- * GET /api/headadmin/customers
- * Access:
- *  - headadmin
- *  - admin (read-only)
- */
+
+/* =========================
+   GET ALL CUSTOMERS
+   - Supports latest-first sorting (backend)
+========================= */
 router.get(
   '/',
   auth,
@@ -32,11 +32,45 @@ router.get(
   getCustomers
 );
 
-/**
- * PATCH /api/headadmin/customers/:id/kyc
- * Access:
- *  - headadmin only
- */
+
+/* =========================
+   GET SINGLE CUSTOMER
+========================= */
+router.get(
+  '/:id',
+  auth,
+  roleMiddleware('headadmin', 'admin'),
+  getCustomerById
+);
+
+
+/* =========================
+   CREATE CUSTOMER
+   - Triggered from "Create User" button
+   - UUID auto generated in model
+========================= */
+router.post(
+  '/',
+  auth,
+  roleMiddleware('headadmin'),
+  createCustomer
+);
+
+
+/* =========================
+   DELETE CUSTOMER
+========================= */
+router.delete(
+  '/:id',
+  auth,
+  roleMiddleware('headadmin'),
+  deleteCustomer
+);
+
+
+/* =========================
+   UPDATE KYC STATUS
+========================= */
 router.patch(
   '/:id/kyc',
   auth,
@@ -44,11 +78,10 @@ router.patch(
   updateKycStatus
 );
 
-/**
- * POST /api/headadmin/customers/:id/kyc-upload
- * Access:
- *  - headadmin only
- */
+
+/* =========================
+   UPLOAD CUSTOMER KYC
+========================= */
 router.post(
   '/:id/kyc-upload',
   auth,
@@ -58,16 +91,22 @@ router.post(
 );
 
 
-/**
- * PATCH /api/headadmin/customers/:id/device-status
- * Access:
- *  - headadmin only
- */
+/* =========================
+   UPDATE DEVICE STATUS
+========================= */
 router.patch(
   '/:id/device-status',
   auth,
   roleMiddleware('headadmin'),
   updateDeviceStatus
+);
+
+
+router.put(
+  '/:id',
+  auth,
+  roleMiddleware('headadmin'),
+  updateCustomer
 );
 
 export default router;

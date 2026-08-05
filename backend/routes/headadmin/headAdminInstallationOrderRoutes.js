@@ -7,7 +7,10 @@ import {
   updateInstallationKycStatus,
   assignInstallationTechnician,
   removeTechnicianAssignment,
+  createInstallationOrder,
+  getHeadAdminUsers,
   completeInstallation,
+  getTransactionsByUser,
 } from '../../controllers/headadmin/headAdminInstallationOrderController.js';
 
 const router = express.Router();
@@ -112,6 +115,27 @@ router.put(
   auth,
   roleMiddleware('headadmin'),
   completeInstallation
+);
+
+router.get(
+  '/users',
+  auth,
+  roleMiddleware('headadmin'),
+  getHeadAdminUsers
+);
+
+router.get(
+  '/transactions/user/:user_id',
+  auth,
+  roleMiddleware('headadmin'),
+  getTransactionsByUser
+);
+
+router.post(
+  '/',
+  auth,
+  roleMiddleware('headadmin'),
+  createInstallationOrder
 );
 
 export default router;

@@ -1,10 +1,68 @@
 import RechargeTransaction from '../../models/RechargeTransaction.js';
+import { ulid } from 'ulid';
 
-/* =========================
-   GET RECHARGE TRANSACTIONS
-   HeadAdmin only
-   Org scoped 🔐
-========================= */
+/* =====================================================
+   CREATE TRANSACTION
+===================================================== */
+export const createRechargeTransaction = async (req, res) => {
+  try {
+    const org_id = req.user.organization;
+
+    const {
+      user_id,
+      device_id,
+      plan_id,
+      amount,
+      payment_mode,
+      payment_status,
+      payment_purpose,
+    } = req.body;
+
+    /* =========================
+       VALIDATION
+    ========================= */
+    if (!user_id || !amount || !payment_mode || !payment_status) {
+      return res.status(400).json({
+        message: 'Required fields missing',
+      });
+    }
+
+    /* =========================
+       CREATE
+    ========================= */
+    const newTxn = await RechargeTransaction.create({
+      user_id, // ✅ UUID string
+      org_id,
+
+      device_id: device_id || null,
+      plan_id: plan_id || null,
+
+      txn_id: ulid(),
+      order_id: ulid(),
+
+      amount,
+      payment_mode,
+      payment_status,
+      payment_purpose: payment_purpose || 'Recharge',
+    });
+
+    res.status(201).json({
+      message: 'Transaction created successfully',
+      transaction: newTxn,
+    });
+
+  } catch (err) {
+    console.error('❌ CREATE TXN ERROR:', err);
+    res.status(500).json({
+      message: 'Failed to create transaction',
+    });
+  }
+};
+
+
+/* =====================================================
+   GET TRANSACTIONS
+===================================================== */
 export const getRechargeTransactions = async (req, res) => {
   try {
     const { device_id } = req.query;
@@ -13,7 +71,6 @@ export const getRechargeTransactions = async (req, res) => {
       org_id: req.user.organization,
     };
 
-    // optional filter
     if (device_id) {
       matchStage.device_id = device_id;
     }
@@ -22,32 +79,21 @@ export const getRechargeTransactions = async (req, res) => {
       { $match: matchStage },
 
       /* =========================
-         JOIN USER (org_users)
+         USER JOIN (FIXED FOR UUID)
       ========================= */
       {
         $lookup: {
           from: 'org_users',
-          let: { uid: '$user_id', org: '$org_id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$user_id', '$$uid'] },
-                    { $eq: ['$org_id', '$$org'] },
-                  ],
-                },
-              },
-            },
-            {
-              $project: {
-                first_name: '$user_name.first_name',
-                last_name: '$user_name.last_name',
-                _id: 0,
-              },
-            },
-          ],
+          localField: 'user_id',
+          foreignField: 'user_id', // ✅ FIXED (IMPORTANT)
           as: 'user_info',
+        },
+      },
+
+      {
+        $unwind: {
+          path: '$user_info',
+          preserveNullAndEmptyArrays: true,
         },
       },
 
@@ -57,9 +103,9 @@ export const getRechargeTransactions = async (req, res) => {
             $trim: {
               input: {
                 $concat: [
-                  { $ifNull: [{ $arrayElemAt: ['$user_info.first_name', 0] }, ''] },
+                  { $ifNull: ['$user_info.user_name.first_name', ''] },
                   ' ',
-                  { $ifNull: [{ $arrayElemAt: ['$user_info.last_name', 0] }, ''] },
+                  { $ifNull: ['$user_info.user_name.last_name', ''] },
                 ],
               },
             },
@@ -68,30 +114,13 @@ export const getRechargeTransactions = async (req, res) => {
       },
 
       /* =========================
-         JOIN PLAN (active_plans)
+         PLAN JOIN
       ========================= */
       {
         $lookup: {
           from: 'active_plans',
-          let: { pid: '$plan_id', org: '$org_id' },
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    { $eq: ['$plan_id', '$$pid'] },
-                    { $eq: ['$org_id', '$$org'] },
-                  ],
-                },
-              },
-            },
-            {
-              $project: {
-                name: 1,
-                _id: 0,
-              },
-            },
-          ],
+          localField: 'plan_id',
+          foreignField: 'plan_id',
           as: 'plan_info',
         },
       },
@@ -101,36 +130,114 @@ export const getRechargeTransactions = async (req, res) => {
           plan_name: {
             $ifNull: [
               { $arrayElemAt: ['$plan_info.name', 0] },
-              'Unknown Plan',
+              '-',
             ],
           },
         },
       },
 
       /* =========================
-         FINAL RESPONSE CLEANUP
+         HANDLE DATE (IMPORTANT)
       ========================= */
-{
-  $project: {
-    _id: 1,
-    txn_id: 1,
-    amount: 1,
-    payment_mode: 1,
-    payment_status: 1,
-    plan_name: 1,
-    user_name: 1,
-    created_at: 1,
-  },
-},
+      {
+        $addFields: {
+          createdAt: {
+            $ifNull: ['$createdAt', '$created_at'], // ✅ handles both cases
+          },
+        },
+      },
 
-      { $sort: { created_at: -1 } },
+      /* =========================
+         FINAL OUTPUT
+      ========================= */
+      {
+        $project: {
+          _id: 1,
+          txn_id: 1,
+          order_id: 1,
+          amount: 1,
+          payment_mode: 1,
+          payment_status: 1,
+          payment_purpose: 1,
+          plan_name: 1,
+          user_name: 1,
+          createdAt: 1,
+        },
+      },
+
+      { $sort: { createdAt: -1 } },
     ]);
 
-    return res.json(transactions);
+    res.json({
+      count: transactions.length,
+      transactions,
+    });
+
   } catch (err) {
-    console.error('❌ RECHARGE TXN ERROR:', err);
-    return res.status(500).json({
+    console.error('❌ GET TXN ERROR:', err);
+    res.status(500).json({
       message: 'Failed to load transactions',
+    });
+  }
+};
+
+/* =====================================================
+   GET TRANSACTIONS BY USER
+===================================================== */
+export const getTransactionsByUser = async (req, res) => {
+  try {
+    const org_id = req.user.organization;
+    const { user_id } = req.params;
+
+    const transactions = await RechargeTransaction.find({
+      org_id,
+      user_id,
+      payment_status: 'Success',
+    })
+      .select('txn_id amount payment_mode payment_status createdAt')
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      transactions,
+    });
+
+  } catch (err) {
+    console.error('❌ GET USER TRANSACTIONS ERROR:', err);
+
+    res.status(500).json({
+      message: 'Failed to fetch user transactions',
+    });
+  }
+};
+
+
+/* =====================================================
+   DELETE TRANSACTION
+===================================================== */
+export const deleteRechargeTransaction = async (req, res) => {
+  try {
+    const org_id = req.user.organization;
+    const { id } = req.params;
+
+    const txn = await RechargeTransaction.findOneAndDelete({
+      _id: id,
+      org_id,
+    });
+
+    if (!txn) {
+      return res.status(404).json({
+        message: 'Transaction not found',
+      });
+    }
+
+    res.json({
+      message: 'Transaction deleted successfully',
+    });
+
+  } catch (err) {
+    console.error('❌ DELETE TXN ERROR:', err);
+    res.status(500).json({
+      message: 'Failed to delete transaction',
     });
   }
 };

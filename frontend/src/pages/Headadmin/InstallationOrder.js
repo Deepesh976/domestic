@@ -1,4 +1,4 @@
-  import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
   import styled from 'styled-components';
   import HeadAdminNavbar from '../../components/Navbar/HeadAdminNavbar';
   import {
@@ -6,8 +6,10 @@
     getTechnicians,
     assignInstallationTechnician,
   } from '../../services/headAdminService';
+  import normalAxios from 'axios';
   import axios from '../../utils/axiosConfig';
   import { useNavigate } from 'react-router-dom';
+  import { ulid } from 'ulid';
 
   /* =========================
     PAGE LAYOUT
@@ -453,9 +455,21 @@
     const [statusFilter, setStatusFilter] = useState('all');
     const [loading, setLoading] = useState(false);
     const [kycModal, setKycModal] = useState(null);
-
+    const [createOrderModal, setCreateOrderModal] = useState(false);
+    const [users, setUsers] = useState([]);
+const [transactions, setTransactions] = useState([]);
+const [orderType, setOrderType] = useState("LIFETIME");
+const [formData, setFormData] = useState({
+  user_id: '',
+  org_id: '',
+  order_id: '',
+  txn_id: '',
+  amount: '',
+  order_type: 'LIFETIME',
+});
     useEffect(() => {
       loadData();
+      loadUsers();
     }, []);
 
     const loadData = async () => {
@@ -478,6 +492,181 @@
       } finally {
         setLoading(false);
       }
+    };
+
+    const loadUsers = async () => {
+      try {
+        const response = await axios.get('/api/headadmin/installations/users');
+        setUsers(response.data || []);
+      } catch {
+        console.log('Failed to load users');
+      }
+    };
+
+    const loadTransactions = async (userId) => {
+  try {
+    const response = await axios.get(
+      `/api/headadmin/transactions/user/${userId}`
+    );
+
+    const txns = response.data.transactions || [];
+
+setTransactions(txns);
+
+if (txns.length > 0) {
+  setFormData(prev => ({
+    ...prev,
+    txn_id: txns[0].txn_id, // latest ULID
+  }));
+}
+  } catch (err) {
+    console.log('Failed to load transactions', err);
+    setTransactions([]);
+  }
+};
+
+    const generateOrderId = () => {
+  return ulid(); // ✅ ULID
+};
+
+// const generateTxnId = () => {
+//   return Math.random().toString(36).substring(2, 22);
+// };
+
+const handleFormChange = (e) => {
+  const { name, value } = e.target;
+
+  if (name === "order_type") {
+    setOrderType(value);
+
+    setFormData((prev) => ({
+      ...prev,
+      order_type: value,
+      txn_id: "",
+      amount: "",
+    }));
+
+    return;
+  }
+
+  if (name === "user_id") {
+    const parsed = JSON.parse(value);
+
+    if (orderType === "LIFETIME") {
+      setFormData((prev) => ({
+        ...prev,
+        user_id: parsed.user_id,
+        org_id: parsed.org_id,
+        txn_id: ulid(),      // Generate new transaction ID
+        amount: "",
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        user_id: parsed.user_id,
+        org_id: parsed.org_id,
+        txn_id: "",
+        amount: "",
+      }));
+
+      loadTransactions(parsed.user_id);
+    }
+
+    return;
+  }
+
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+};
+
+
+const handleCreateOrder = async (e) => {
+  e.preventDefault();
+
+  const requiredFields = ['user_id'];
+  if (requiredFields.some(field => !formData[field])) {
+    alert('Please fill all required fields');
+    return;
+  }
+
+  try {
+    const token = localStorage.getItem('token');
+    // 1️⃣ External API FIRST
+await normalAxios.post(
+  'http://api.smartroplus.in/api/v1/orders/lifetime',
+{
+  user_id: formData.user_id,
+  org_id: 'org_001', // ✅ Hardcoded for now
+  order_id: formData.order_id,
+  txn_id: formData.txn_id,
+  amount: Number(formData.amount),
+  order_type: formData.order_type,
+
+  payment_purpose: "ORDER",
+  payment_mode: "OFFLINE",
+  payment_status: "SUCCESS",
+},
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
+console.log("FINAL PAYLOAD:", {
+  user_id: formData.user_id,
+  org_id: formData.org_id,
+  order_id: formData.order_id,
+  txn_id: formData.txn_id,
+  amount: formData.amount,
+  order_type: formData.order_type,
+});
+
+    // ✅ SUCCESS FLOW
+    alert('Installation order created successfully ✓');
+
+    setCreateOrderModal(false);
+
+setTransactions([]);
+
+setFormData({
+  user_id: '',
+  org_id: '',
+  order_id: generateOrderId(),
+  txn_id: '',
+  amount: '',
+  order_type: 'LIFETIME',
+});
+
+    loadData();
+
+} catch (err) {
+  console.log("FULL ERROR:", err);
+  console.log("RESPONSE:", err.response);
+
+  alert(err.response?.data?.message || 'Failed to create order');
+}
+};
+
+const openCreateModal = () => {
+  setTransactions([]);
+
+setFormData({
+  user_id: '',
+  org_id: '',
+  order_id: generateOrderId(),
+  txn_id: '',
+  amount: '',
+  order_type: 'LIFETIME',
+});
+
+  setCreateOrderModal(true);
+};
+
+    const closeCreateModal = () => {
+      setCreateOrderModal(false);
     };
 
     const filteredOrders = useMemo(() => {
@@ -616,6 +805,7 @@
 
             {/* Search & Filters */}
             <ControlsSection>
+
               <SearchInput
   type="text"
   placeholder="Search by customer name, order ID, or plan..."
@@ -623,9 +813,9 @@
   onChange={(e) => setSearch(e.target.value)}
 />
 
-<CreateButton onClick={() => navigate('/headadmin/orders/create')}>
-  Create Order
-</CreateButton>
+              <CreateButton onClick={openCreateModal}>
+    + Create Order
+  </CreateButton>
 
 <FilterSelect
   value={statusFilter}
@@ -1200,6 +1390,392 @@
 
             .kyc-modal-buttons {
               grid-template-columns: 1fr !important;
+            }
+          }
+        `}</style>
+      </div>
+    </div>
+  )}
+
+  {/* CREATE ORDER MODAL */}
+  {createOrderModal && (
+    <div
+      className="create-order-overlay"
+      onClick={closeCreateModal}
+    >
+      <div
+        className="create-order-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header - Fixed */}
+        <div className="modal-header">
+          <h2>Create Installation Order</h2>
+          <button
+            className="close-btn"
+            onClick={closeCreateModal}
+            aria-label="Close modal"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Scrollable Content */}
+        <form onSubmit={handleCreateOrder} className="order-form">
+          <div className="form-content">
+            {/* User ID */}
+            <div className="form-group">
+              <label htmlFor="user_id">User ID *</label>
+<select
+  id="user_id"
+  name="user_id"
+  value={
+    formData.user_id
+      ? JSON.stringify({
+          user_id: formData.user_id,
+          org_id: formData.org_id,
+        })
+      : ''
+  }
+  onChange={handleFormChange}
+  required
+>
+                <option value="">Select User</option>
+                {users.map(u => (
+<option
+  key={u.user_id}
+  value={JSON.stringify({
+    user_id: u.user_id,
+    org_id: u.org_id
+  })}
+>
+  {u.user_name?.first_name} {u.user_name?.last_name} - {u.phone_number}
+</option>
+                ))}
+              </select>
+              </div>
+            </div>
+
+            <div className="form-group">
+  <label htmlFor="order_id">Order ID</label>
+  <input
+    id="order_id"
+    type="text"
+    name="order_id"
+    value={formData.order_id}
+    readOnly
+    disabled
+    className="readonly-input"
+  />
+  <span className="helper-text">Auto-generated</span>
+</div>
+
+{/* Transaction ID */}
+<div className="form-group">
+  <label htmlFor="txn_id">Transaction ID</label>
+
+  <input
+    id="txn_id"
+    type="text"
+    name="txn_id"
+    value={formData.txn_id}
+    readOnly
+    disabled
+    className="readonly-input"
+  />
+
+  <span className="helper-text">
+    Auto-filled from latest successful transaction
+  </span>
+</div>
+
+{/* Amount */}
+<div className="form-group">
+  <label htmlFor="amount">Amount *</label>
+
+  <input
+    id="amount"
+    type="number"
+    name="amount"
+    value={formData.amount}
+    onChange={handleFormChange}
+    placeholder="Enter amount"
+    required
+    min="1"
+  />
+
+  <span className="helper-text">
+    Enter the transaction amount
+  </span>
+</div>
+
+          {/* Sticky Action Buttons */}
+          <div className="modal-footer">
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={closeCreateModal}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn-primary"
+              disabled={!formData.user_id}
+            >
+              Create Order
+            </button>
+          </div>
+        </form>
+
+        {/* Styles */}
+        <style>{`
+          .create-order-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 20px;
+            animation: fadeIn 0.3s ease;
+            overflow-y: auto;
+          }
+
+          @keyframes fadeIn {
+            from {
+              opacity: 0;
+            }
+            to {
+              opacity: 1;
+            }
+          }
+
+          .create-order-modal {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 550px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            animation: slideScale 0.3s ease;
+            margin: auto;
+          }
+
+          @keyframes slideScale {
+            from {
+              opacity: 0;
+              transform: scale(0.95) translateY(-20px);
+            }
+            to {
+              opacity: 1;
+              transform: scale(1) translateY(0);
+            }
+          }
+
+          .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 32px 32px 16px 32px;
+            border-bottom: 1px solid #e2e8f0;
+            flex-shrink: 0;
+          }
+
+          .modal-header h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 700;
+            color: #0f172a;
+          }
+
+          .close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+          }
+
+          .close-btn:hover {
+            background: #f1f5f9;
+            color: #475569;
+          }
+
+          .order-form {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 0;
+          }
+
+          .form-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+          }
+
+          .form-content::-webkit-scrollbar {
+            width: 6px;
+          }
+
+          .form-content::-webkit-scrollbar-track {
+            background: transparent;
+          }
+
+          .form-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+          }
+
+          .form-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+          }
+
+          .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+
+          .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+
+          .form-group input,
+          .form-group select {
+            padding: 12px 16px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            color: #0f172a;
+            transition: all 0.3s ease;
+            font-family: inherit;
+          }
+
+          .form-group input:focus,
+          .form-group select:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+          }
+
+          .form-group select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23475569' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+          }
+
+          .readonly-input {
+            background: #f1f5f9 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+          }
+
+          .readonly-input:focus {
+            border-color: #cbd5e1 !important;
+            box-shadow: none !important;
+          }
+
+          .helper-text {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 4px;
+          }
+
+          .modal-footer {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding: 24px 32px 32px 32px;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+            flex-shrink: 0;
+          }
+
+          .btn-secondary,
+          .btn-primary {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+          }
+
+          .btn-secondary {
+            background: white;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+          }
+
+          .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+          }
+
+          .btn-primary {
+            background: #2563eb;
+            color: white;
+          }
+
+          .btn-primary:hover:not(:disabled) {
+            background: #1d4ed8;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+          }
+
+          .btn-primary:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            opacity: 0.6;
+          }
+
+          @media (max-width: 600px) {
+            .create-order-modal {
+              max-width: 95%;
+              max-height: 95vh;
+            }
+
+            .modal-header {
+              padding: 24px 24px 12px 24px;
+            }
+
+            .modal-header h2 {
+              font-size: 18px;
+            }
+
+            .form-content {
+              padding: 24px;
+              gap: 16px;
+            }
+
+            .modal-footer {
+              padding: 16px 24px 24px 24px;
+              grid-template-columns: 1fr;
             }
           }
         `}</style>

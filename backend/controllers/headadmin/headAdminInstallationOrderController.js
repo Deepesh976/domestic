@@ -2,6 +2,7 @@ import InstallationOrder from '../../models/InstallationOrder.js';
 import OrgUser from '../../models/OrgUser.js';
 import OrgTechnician from '../../models/OrgTechnician.js';
 import Plan from '../../models/Plan.js';
+import RechargeTransaction from '../../models/RechargeTransaction.js';
 
 /* =====================================================
    GET INSTALLATION ORDERS (HEAD ADMIN)
@@ -15,7 +16,7 @@ export const getInstallationOrders = async (req, res) => {
       .lean();
 
     const users = await OrgUser.find({ org_id })
-      .select('user_id user_name')
+      .select('user_id user_name phone_number')
       .lean();
 
     const technicians = await OrgTechnician.find({ org_id })
@@ -82,6 +83,8 @@ export const updateInstallationKycStatus = async (req, res) => {
     }
 
     const order = await InstallationOrder.findOne({ _id: id, org_id });
+    console.log("ORDER FROM NODE =", order);
+console.log("AMOUNT =", order?.amount);
 
     if (!order) {
       return res.status(404).json({
@@ -288,6 +291,158 @@ export const completeInstallation = async (req, res) => {
     console.error('🔥 completeInstallation:', error);
     res.status(500).json({
       message: error.message,
+    });
+  }
+};
+
+/* =====================================================
+   GET USERS (HEAD ADMIN DROPDOWN)
+===================================================== */
+export const getHeadAdminUsers = async (req, res) => {
+  try {
+    const org_id = req.user.organization;
+
+    const users = await OrgUser.find({ org_id })
+      .select('user_id user_name phone_number')
+      .lean();
+
+    res.status(200).json(users);
+
+  } catch (error) {
+    console.error('🔥 getHeadAdminUsers:', error);
+    res.status(500).json({
+      message: 'Failed to fetch users',
+    });
+  }
+};
+
+/* =====================================================
+   CREATE INSTALLATION ORDER (FIXED)
+===================================================== */
+export const createInstallationOrder = async (req, res) => {
+  try {
+
+    console.log("========== CREATE ORDER ==========");
+    console.log("REQ BODY =", req.body);
+    console.log("AMOUNT RECEIVED =", req.body.amount);
+    console.log("==================================");
+
+const {
+  user_id,
+  order_id,
+  txn_id,
+  amount,
+  order_type,
+  payment_purpose,
+  payment_mode,
+  payment_status,
+} = req.body;
+
+    // ✅ Validate required fields
+if (
+  !user_id ||
+  !order_id ||
+  !txn_id ||
+  amount === undefined ||
+  amount === null ||
+  order_type === undefined
+) {
+  return res.status(400).json({
+    message:
+      "user_id, order_id, txn_id, amount and order_type are required",
+  });
+}
+
+if (!['LIFETIME', 'RENTAL'].includes(order_type)) {
+  return res.status(400).json({
+    message: 'Invalid order type',
+  });
+}
+
+    // ✅ Always take org_id from token
+    const org_id = req.user.organization;
+
+    // ✅ FIX: Check duplicate per org (NOT global)
+    const existingOrder = await InstallationOrder.findOne({
+      order_id,
+      org_id,
+    });
+
+    if (existingOrder) {
+      return res.status(400).json({
+        message: 'Order ID already exists for this organization',
+      });
+    }
+
+    const finalAmount = Number(amount);
+
+const newOrder = new InstallationOrder({
+  user_id,
+  order_id,
+  txn_id,
+  amount: finalAmount,
+  order_type,
+  org_id,
+
+  payment_purpose,
+  payment_mode,
+  payment_status,
+
+  status: "OPEN",
+
+  stages: {
+    payment_received: payment_status === "SUCCESS",
+    kyc_verified: false,
+    technician_assigned: false,
+    installation_completed: false,
+  },
+});
+
+    await newOrder.save();
+
+    res.status(201).json({
+      message: 'Order created successfully',
+      order: newOrder,
+    });
+
+  } catch (error) {
+    console.error('🔥 createInstallationOrder ERROR:', error);
+
+    // 🔥 Handle duplicate index error also (important)
+    if (error.code === 11000) {
+      return res.status(400).json({
+        message: 'Duplicate order ID (DB constraint)',
+      });
+    }
+
+    res.status(500).json({
+      message: error.message || 'Failed to create order',
+    });
+  }
+};
+
+export const getTransactionsByUser = async (req, res) => {
+  try {
+    const org_id = req.user.organization;
+    const { user_id } = req.params;
+
+    const transactions = await RechargeTransaction.find({
+      org_id,
+      user_id,
+      payment_status: "Success",
+    })
+      .select("txn_id amount createdAt")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      transactions,
+    });
+
+  } catch (err) {
+    console.error("❌ GET USER TRANSACTIONS ERROR:", err);
+
+    res.status(500).json({
+      message: "Failed to fetch user transactions",
     });
   }
 };

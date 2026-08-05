@@ -4,15 +4,16 @@ import axios from '../../utils/axiosConfig';
 import HeadAdminNavbar from '../../components/Navbar/HeadAdminNavbar';
 import { useLocation } from 'react-router-dom';
 import { useDebounce } from 'use-debounce';
-import { 
-  MdReceipt, 
-  MdSearch, 
-  MdCheckCircle, 
-  MdError, 
-  MdPayments, 
+import {
+  MdReceipt,
+  MdSearch,
+  MdCheckCircle,
+  MdError,
+  MdPayments,
   MdHistory,
   MdOutlineAccountBalanceWallet,
-  MdTrendingUp
+  MdTrendingUp,
+  MdAdd
 } from 'react-icons/md';
 
 /* =========================
@@ -119,6 +120,34 @@ const DownloadBtn = styled.button`
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+  }
+`;
+
+const CreateTxnBtn = styled.button`
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `;
 
@@ -308,6 +337,238 @@ const LoadingSkeleton = styled.div`
 `;
 
 /* =========================
+   MODAL STYLES
+========================= */
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+`;
+
+const ModalContent = styled.div`
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(30px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+`;
+
+const ModalHeader = styled.div`
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const ModalTitle = styled.h2`
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+`;
+
+const CloseBtn = styled.button`
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #1e293b;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const ModalBody = styled.div`
+  padding: 24px;
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const FormGroup = styled.div`
+  margin-bottom: 18px;
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+`;
+
+const FormLabel = styled.label`
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+`;
+
+const FormInput = styled.input`
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  &:disabled {
+    background: #f8fafc;
+    color: #64748b;
+    cursor: not-allowed;
+  }
+`;
+
+const FormSelect = styled.select`
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  background: white;
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  &:disabled {
+    background: #f8fafc;
+    color: #64748b;
+    cursor: not-allowed;
+  }
+`;
+
+const ReadOnlyField = styled.div`
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: #f8fafc;
+  color: #64748b;
+  font-family: 'JetBrains Mono', monospace;
+  word-break: break-all;
+`;
+
+const ModalFooter = styled.div`
+  padding: 20px 24px;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+`;
+
+const CancelBtn = styled.button`
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: white;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+const SubmitBtn = styled.button`
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  color: white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+/* =========================
    HELPERS
 ========================= */
 const formatDate = (date) => {
@@ -332,10 +593,146 @@ export default function RechargeTransactions() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebounce(search, 300);
+  const [showModal, setShowModal] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [formLoading, setFormLoading] = useState(false);
+  const [formError, setFormError] = useState('');
+
+  const [formData, setFormData] = useState({
+    user_id: '',
+    org_id: '',
+    order_id: '',
+    txn_id: '',
+    payment_purpose: '',
+    payment_mode: '',
+    payment_status: '',
+    amount: '',
+  });
 
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const deviceId = params.get('device_id');
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get('/api/headadmin/customers');
+      setUsers(res.data.customers || []);
+    } catch (err) {
+      console.error('Failed to fetch users:', err);
+      setFormError('Failed to load customer list');
+    }
+  };
+
+  const generateULID = () => {
+    return `${Date.now()}${Math.random().toString(36).substring(2, 8)}`.toUpperCase();
+  };
+
+  const openCreateModal = () => {
+    setFormData({
+      user_id: '',
+      org_id: '',
+      order_id: generateULID(),
+      txn_id: generateULID(),
+      payment_purpose: '',
+      payment_mode: '',
+      payment_status: '',
+      amount: '',
+    });
+    setFormError('');
+    fetchUsers();
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    if (!formLoading) {
+      setShowModal(false);
+    }
+  };
+
+  const handleFormChange = (field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+const handleSubmitTransaction = async (e) => {
+  e.preventDefault();
+
+  if (
+    !formData.user_id ||
+    !formData.payment_purpose ||
+    !formData.payment_mode ||
+    !formData.payment_status ||
+    !formData.amount
+  ) {
+    setFormError('Please fill in all required fields');
+    return;
+  }
+
+  if (parseFloat(formData.amount) <= 0) {
+    setFormError('Amount must be greater than 0');
+    return;
+  }
+
+  try {
+    setFormLoading(true);
+    setFormError('');
+
+    // ✅ FIX: DEFINE FIRST
+    const selectedUser = users.find(
+      (u) => u._id === formData.user_id
+    );
+
+    if (!selectedUser) {
+      setFormError('Invalid user selected');
+      return;
+    }
+
+    const payload = {
+      user_id: selectedUser.user_id, // ✅ UUID
+      org_id: formData.org_id,
+      order_id: formData.order_id,
+      txn_id: formData.txn_id,
+      payment_purpose: formData.payment_purpose,
+      payment_mode: formData.payment_mode,
+      payment_status: formData.payment_status,
+      amount: parseFloat(formData.amount),
+    };
+
+    const res = await axios.post('/api/headadmin/transactions', payload);
+
+    const newTxn = {
+      ...res.data.transaction,
+      user_name: `${selectedUser.user_name.first_name} ${selectedUser.user_name.last_name}`,
+      plan_name: '-',
+    };
+
+    setData((prev) => [newTxn, ...prev]);
+
+    alert('Transaction created successfully');
+
+    setShowModal(false);
+    setFormData({
+      user_id: '',
+      org_id: '',
+      order_id: '',
+      txn_id: '',
+      payment_purpose: '',
+      payment_mode: '',
+      payment_status: '',
+      amount: '',
+    });
+
+  } catch (err) {
+    console.error('Failed to create transaction:', err);
+    setFormError(
+      err.response?.data?.message || 'Failed to create transaction'
+    );
+  } finally {
+    setFormLoading(false);
+  }
+};
 
   useEffect(() => {
     setLoading(true);
@@ -344,7 +741,7 @@ export default function RechargeTransactions() {
         params: deviceId ? { device_id: deviceId } : {},
       })
       .then((res) => {
-        setData(res.data || []);
+        setData(res.data.transactions || []);
         setError('');
       })
       .catch((err) => {
@@ -356,15 +753,19 @@ export default function RechargeTransactions() {
       });
   }, [deviceId]);
 
-  const filtered = useMemo(() => {
+const filtered = useMemo(() => {
+  const safeData = Array.isArray(data) ? data : [];
+
+  return safeData.filter((t) => {
     const q = debouncedSearch.toLowerCase();
-    return data.filter(
-      (t) =>
-        t.user_name?.toLowerCase().includes(q) ||
-        t.txn_id?.toLowerCase().includes(q) ||
-        t.plan_name?.toLowerCase().includes(q)
+
+    return (
+      t.user_name?.toLowerCase().includes(q) ||
+      t.txn_id?.toLowerCase().includes(q) ||
+      t.plan_name?.toLowerCase().includes(q)
     );
-  }, [data, debouncedSearch]);
+  });
+}, [data, debouncedSearch]);
 
   const downloadCSV = () => {
   const rows = [
@@ -376,7 +777,7 @@ export default function RechargeTransactions() {
       t.amount,
       t.payment_mode,
       t.payment_status,
-      formatDate(t.created_at)
+      formatDate(t.createdAt || t.created_at)
     ])
   ];
 
@@ -391,9 +792,9 @@ export default function RechargeTransactions() {
 };
 
   const stats = useMemo(() => {
-    const successful = data.filter(
+const successful = (Array.isArray(data) ? data : []).filter(
   t => t.payment_status?.toLowerCase() === 'success'
-);
+)
 
     return {
       totalCount: data.length,
@@ -417,9 +818,15 @@ export default function RechargeTransactions() {
     </Title>
   </TitleGroup>
 
-  <DownloadBtn onClick={downloadCSV}>
-    📥 Export CSV
-  </DownloadBtn>
+  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+    <CreateTxnBtn onClick={openCreateModal}>
+      <MdAdd size={20} />
+      Create Transaction
+    </CreateTxnBtn>
+    <DownloadBtn onClick={downloadCSV}>
+      📥 Export CSV
+    </DownloadBtn>
+  </div>
 </HeaderSection>
 
         <StatsGrid>
@@ -512,11 +919,18 @@ export default function RechargeTransactions() {
                   {filtered.map((t, i) => (
                     <tr key={t._id}>
                       <Td style={{ color: '#94a3b8', fontWeight: 600 }}>{i + 1}</Td>
-                      <Td>
-                        <TxnId style={{ background: '#eff6ff', color: '#2563eb', border: 'none', fontWeight: 700 }}>
-                          {t.user_name || '-'}
-                        </TxnId>
-                      </Td>
+<Td>
+  <TxnId
+    style={{
+      background: '#eff6ff',
+      color: '#2563eb',
+      border: 'none',
+      fontWeight: 700,
+    }}
+  >
+    {t.user_name && t.user_name.trim() !== '' ? t.user_name : '-'}
+  </TxnId>
+</Td>
                       <Td>
                         <TxnId>{t.txn_id}</TxnId>
                       </Td>
@@ -537,13 +951,161 @@ export default function RechargeTransactions() {
   {t.payment_status}
 </StatusBadge>
                       </Td>
-                      <Td style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>{formatDate(t.created_at)}</Td>
+                      <Td style={{ whiteSpace: 'nowrap', fontWeight: 500 }}>
+  {formatDate(t.createdAt || t.created_at)}
+</Td>
                     </tr>
                   ))}
                 </tbody>
               </StyledTable>
             </TableScroll>
           </TableContainer>
+        )}
+
+        {/* CREATE TRANSACTION MODAL */}
+        {showModal && (
+          <ModalOverlay onClick={closeModal}>
+            <ModalContent onClick={(e) => e.stopPropagation()}>
+              <ModalHeader>
+                <ModalTitle>Create New Transaction</ModalTitle>
+                <CloseBtn
+                  onClick={closeModal}
+                  disabled={formLoading}
+                >
+                  ×
+                </CloseBtn>
+              </ModalHeader>
+
+              <ModalBody>
+                <form onSubmit={handleSubmitTransaction}>
+                  {formError && (
+                    <FormGroup className="full-width">
+                      <div style={{
+                        padding: '12px',
+                        background: '#fee2e2',
+                        border: '1px solid #fecaca',
+                        borderRadius: '8px',
+                        color: '#991b1b',
+                        fontSize: '0.9rem',
+                        marginBottom: '12px'
+                      }}>
+                        {formError}
+                      </div>
+                    </FormGroup>
+                  )}
+
+                  <FormGrid>
+                    <FormGroup>
+                      <FormLabel>Select User *</FormLabel>
+                      <FormSelect
+                        required
+                        value={formData.user_id}
+                        onChange={(e) => handleFormChange('user_id', e.target.value)}
+                      >
+                        <option value="">-- Choose a customer --</option>
+                        {users.map((user) => (
+                          <option key={user._id} value={user._id}>
+                            {user.user_name?.first_name} {user.user_name?.last_name}
+                          </option>
+                        ))}
+                      </FormSelect>
+                    </FormGroup>
+
+                    {/* <FormGroup>
+                      <FormLabel>Organization ID</FormLabel>
+                      <ReadOnlyField>
+                        Auto-filled
+                      </ReadOnlyField>
+                    </FormGroup> */}
+
+                    <FormGroup>
+                      <FormLabel>Order ID</FormLabel>
+                      <ReadOnlyField>
+                        {formData.order_id}
+                      </ReadOnlyField>
+                    </FormGroup>
+
+                    <FormGroup>
+                      <FormLabel>Transaction ID</FormLabel>
+                      <ReadOnlyField>
+                        {formData.txn_id}
+                      </ReadOnlyField>
+                    </FormGroup>
+
+                    <FormGroup>
+                      <FormLabel>Payment Purpose *</FormLabel>
+                      <FormSelect
+                        required
+                        value={formData.payment_purpose}
+                        onChange={(e) => handleFormChange('payment_purpose', e.target.value)}
+                      >
+                        <option value="">-- Select purpose --</option>
+                        <option value="Order">Order</option>
+                        <option value="Recharge">Recharge</option>
+                      </FormSelect>
+                    </FormGroup>
+
+                    <FormGroup>
+                      <FormLabel>Payment Mode *</FormLabel>
+                      <FormSelect
+                        required
+                        value={formData.payment_mode}
+                        onChange={(e) => handleFormChange('payment_mode', e.target.value)}
+                      >
+                        <option value="">-- Select mode --</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Offline">Offline</option>
+                      </FormSelect>
+                    </FormGroup>
+
+                    <FormGroup>
+                      <FormLabel>Payment Status *</FormLabel>
+                      <FormSelect
+                        required
+                        value={formData.payment_status}
+                        onChange={(e) => handleFormChange('payment_status', e.target.value)}
+                      >
+                        <option value="">-- Select status --</option>
+                        <option value="Success">Success</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Expired">Expired</option>
+                      </FormSelect>
+                    </FormGroup>
+
+                    <FormGroup>
+                      <FormLabel>Amount (₹) *</FormLabel>
+                      <FormInput
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        required
+                        value={formData.amount}
+                        onChange={(e) => handleFormChange('amount', e.target.value)}
+                        placeholder="Enter amount"
+                        disabled={formLoading}
+                      />
+                    </FormGroup>
+                  </FormGrid>
+                </form>
+              </ModalBody>
+
+              <ModalFooter>
+                <CancelBtn
+                  onClick={closeModal}
+                  disabled={formLoading}
+                >
+                  Cancel
+                </CancelBtn>
+                <SubmitBtn
+                  onClick={handleSubmitTransaction}
+                  disabled={formLoading}
+                >
+                  {formLoading ? 'Creating...' : 'Create Transaction'}
+                </SubmitBtn>
+              </ModalFooter>
+            </ModalContent>
+          </ModalOverlay>
         )}
       </PageContainer>
     </HeadAdminNavbar>

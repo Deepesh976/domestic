@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { FiX, FiPlus, FiEdit2, FiTrash2 } from 'react-icons/fi';
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiEdit2,
+  FiPlus,
+  FiTrash2,
+  FiX,
+} from 'react-icons/fi';
 import {
   getOrganizations,
   deleteOrganization,
@@ -78,6 +85,8 @@ const SuperAdminOrg = () => {
     (page - 1) * pageSize,
     page * pageSize
   );
+  const firstRecord = filtered.length === 0 ? 0 : (page - 1) * pageSize + 1;
+  const lastRecord = Math.min(page * pageSize, filtered.length);
 
   /* =========================
      MODAL HANDLERS
@@ -213,9 +222,9 @@ const SuperAdminOrg = () => {
       <div className="org-page">
         {/* HEADER */}
 <div className="org-header">
-  <h1 className="org-title">Organizations</h1>
 
-  <div className="org-header-right">
+  {/* Left Side */}
+  <div className="org-header-left">
 
     <input
       className="org-search"
@@ -228,8 +237,26 @@ const SuperAdminOrg = () => {
       }}
     />
 
+    <button className="org-download-btn">
+      Download
+    </button>
+
+  </div>
+
+  {/* Center */}
+  <div className="org-header-center">
+    <h1 className="org-title">Organizations</h1>
+  </div>
+
+  {/* Right Side */}
+  <div className="org-header-right">
+
     <div className="org-actions">
-      <button className="org-button primary" onClick={openCreateModal}>
+
+      <button
+        className="org-button primary"
+        onClick={openCreateModal}
+      >
         <FiPlus size={16} /> Create
       </button>
 
@@ -248,29 +275,19 @@ const SuperAdminOrg = () => {
       >
         <FiTrash2 size={16} /> Delete
       </button>
+
     </div>
 
   </div>
-</div>
 
-        {/* SEARCH */}
-        <input
-          className="org-search"
-          type="text"
-          placeholder="Search organizations..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-        />
+</div>
 
         {/* TABLE */}
         <div className="org-card">
 <table className="org-table">
   <thead className="org-table-header">
     <tr>
-      <th className="org-table-header-cell" style={{ width: 40 }}></th>
+      <th className="org-table-header-cell org-select-column"></th>
       <th className="org-table-header-cell">Logo</th>
       <th className="org-table-header-cell">Org ID</th>
       <th className="org-table-header-cell">Organization Name</th>
@@ -303,7 +320,7 @@ const SuperAdminOrg = () => {
             <img
               src={`${API_BASE}/uploads/organizations/${org.logo}`}
               alt="logo"
-              style={{ height: 32 }}
+              className="org-table-logo"
             />
           ) : (
             '—'
@@ -329,19 +346,36 @@ const SuperAdminOrg = () => {
 </table>
 
 
-          {totalPages > 1 && (
-            <div className="org-pagination">
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <button
-                  key={i}
-                  className={page === i + 1 ? 'active' : ''}
-                  onClick={() => setPage(i + 1)}
-                >
-                  {i + 1}
-                </button>
-              ))}
+          <div className="org-pagination">
+            <p className="org-pagination-summary">
+              Showing <strong>{firstRecord}–{lastRecord}</strong> of{' '}
+              <strong>{filtered.length}</strong> organizations
+            </p>
+
+            <div className="org-pagination-controls">
+              <button
+                type="button"
+                className="org-pagination-btn"
+                onClick={() => setPage((currentPage) => currentPage - 1)}
+                disabled={page === 1 || totalPages === 0}
+              >
+                <FiChevronLeft size={16} />
+                Previous
+              </button>
+              <span className="org-pagination-status">
+                Page {totalPages === 0 ? 0 : page} of {totalPages}
+              </span>
+              <button
+                type="button"
+                className="org-pagination-btn"
+                onClick={() => setPage((currentPage) => currentPage + 1)}
+                disabled={page === totalPages || totalPages === 0}
+              >
+                Next
+                <FiChevronRight size={16} />
+              </button>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -352,7 +386,7 @@ const SuperAdminOrg = () => {
             <div className="org-modal-header">
               <div>
                 <h2 className="org-modal-title">
-                  {modalMode === 'create' ? '✨ Create New Organization' : '✏️ Edit Organization'}
+                  {modalMode === 'create' ? 'Create New Organization' : 'Edit Organization'}
                 </h2>
                 <p className="org-modal-subtitle">
                   {modalMode === 'create' ? 'Add a new organization to your system' : 'Update organization details'}

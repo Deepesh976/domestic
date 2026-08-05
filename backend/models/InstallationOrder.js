@@ -23,8 +23,7 @@ const InstallationOrderSchema = new mongoose.Schema(
     order_id: {
       type: String,
       required: true,
-      unique: true,
-      index: true,
+      index: true, // ✅ no global unique
     },
 
     plan_id: {
@@ -42,6 +41,20 @@ const InstallationOrderSchema = new mongoose.Schema(
       default: '',
       index: true,
     },
+
+    amount: {
+  type: Number,
+  required: true,
+  min: 0,
+},
+
+order_type: {
+  type: String,
+  enum: ['LIFETIME', 'RENTAL'],
+  required: true,
+  default: 'LIFETIME',
+  index: true,
+},
 
     /* =========================
        DELIVERY / INSTALLATION ADDRESS
@@ -79,7 +92,6 @@ const InstallationOrderSchema = new mongoose.Schema(
 
     /* =========================
        ORDER STATUS (LIFECYCLE)
-       Only backend changes this
     ========================= */
     status: {
       type: String,
@@ -119,15 +131,12 @@ const InstallationOrderSchema = new mongoose.Schema(
     /* =========================
        TECHNICIAN ASSIGNMENT
     ========================= */
-
-    // Stores technician UUID (user_id)
     assigned_to: {
       type: String,
       default: null,
       index: true,
     },
 
-    // Technician response
     technician_approval_status: {
       type: String,
       enum: ['PENDING', 'ACCEPTED', 'REJECTED'],
@@ -149,11 +158,19 @@ const InstallationOrderSchema = new mongoose.Schema(
    INDEXES
 ========================= */
 
+// 🔥 IMPORTANT: UNIQUE PER ORG (FIX)
+InstallationOrderSchema.index(
+  { org_id: 1, order_id: 1 },
+  { unique: true }
+);
+
+// Useful indexes
 InstallationOrderSchema.index({ org_id: 1, user_id: 1 });
 InstallationOrderSchema.index({ org_id: 1, status: 1 });
 InstallationOrderSchema.index({ org_id: 1, 'stages.payment_received': 1 });
 InstallationOrderSchema.index({ org_id: 1, kyc_approval_status: 1 });
 InstallationOrderSchema.index({ org_id: 1, assigned_to: 1 });
+InstallationOrderSchema.index({ org_id: 1, order_type: 1 });
 
 /* =========================
    VIRTUALS

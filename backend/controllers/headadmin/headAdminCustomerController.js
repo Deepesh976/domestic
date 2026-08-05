@@ -1,18 +1,14 @@
 import OrgUser from '../../models/OrgUser.js';
 
 /* =====================================================
-   HEAD ADMIN – CUSTOMER CONTROLLER
-   NEW RULES:
-   - Organization isolation via org_id
-   - Customer KYC is only for profile display
-   - Installation Order controls approval workflow
+   HEAD ADMIN – CUSTOMER CONTROLLER (FINAL WORKING)
 ===================================================== */
 
 
 /* =========================
-   GET ALL CUSTOMERS (ORG-SCOPED)
+   CREATE CUSTOMER
 ========================= */
-export const getCustomers = async (req, res) => {
+export const createCustomer = async (req, res) => {
   try {
     const org_id = req.user.organization;
 
@@ -22,14 +18,75 @@ export const getCustomers = async (req, res) => {
       });
     }
 
+    const { name, email, phone, address } = req.body;
+
+    if (!name || !email || !phone) {
+      return res.status(400).json({
+        message: 'Name, email and phone are required',
+      });
+    }
+
+    /* =========================
+       🔥 SPLIT NAME FIX
+    ========================= */
+    const nameParts = name.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    /* =========================
+       CREATE USER
+    ========================= */
+    const newCustomer = await OrgUser.create({
+      org_id,
+
+      email_address: email,
+      phone_number: phone,
+
+      user_name: {
+        first_name: firstName,
+        last_name: lastName,
+      },
+
+address: {
+  line: address?.line || '',
+  street: address?.street || '',
+  area: address?.area || '',
+  city: address?.city || '',
+  state: address?.state || '',
+  code: address?.code || '',
+  country: address?.country || 'India',
+},
+    });
+
+    res.status(201).json({
+      message: 'Customer created successfully',
+      customer: newCustomer,
+    });
+
+  } catch (error) {
+    console.error('❌ Create Customer Error:', error);
+    res.status(500).json({
+      message: 'Failed to create customer',
+    });
+  }
+};
+
+/* =========================
+   GET ALL CUSTOMERS (LATEST FIRST)
+========================= */
+export const getCustomers = async (req, res) => {
+  try {
+    const org_id = req.user.organization;
+
     const customers = await OrgUser.find({ org_id })
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1 }) // 🔥 latest on top
       .lean();
 
     res.status(200).json({
       count: customers.length,
       customers,
     });
+
   } catch (error) {
     console.error('❌ Get Customers Error:', error);
     res.status(500).json({
@@ -40,9 +97,148 @@ export const getCustomers = async (req, res) => {
 
 
 /* =========================
-   UPLOAD CUSTOMER KYC IMAGE
-   - Sets status to "pending"
-   - Does NOT sync installation
+   GET SINGLE CUSTOMER
+========================= */
+export const getCustomerById = async (req, res) => {
+  try {
+    const org_id = req.user.organization;
+    const { id } = req.params;
+
+    const customer = await OrgUser.findOne({ _id: id, org_id });
+
+    if (!customer) {
+      return res.status(404).json({
+        message: 'Customer not found',
+      });
+    }
+
+    res.status(200).json(customer);
+
+  } catch (error) {
+    console.error('❌ Get Customer Error:', error);
+    res.status(500).json({
+      message: 'Failed to fetch customer',
+    });
+  }
+};
+
+
+/* =========================
+   DELETE CUSTOMER
+========================= */
+export const deleteCustomer = async (req, res) => {
+  try {
+    const org_id = req.user.organization;
+    const { id } = req.params;
+
+    const customer = await OrgUser.findOneAndDelete({
+      _id: id,
+      org_id,
+    });
+
+    if (!customer) {
+      return res.status(404).json({
+        message: 'Customer not found',
+      });
+    }
+
+    res.status(200).json({
+      message: 'Customer deleted successfully',
+    });
+
+  } catch (error) {
+    console.error('❌ Delete Error:', error);
+    res.status(500).json({
+      message: 'Failed to delete customer',
+    });
+  }
+};
+
+
+/* =========================
+   UPDATE KYC STATUS
+========================= */
+export const updateKycStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const org_id = req.user.organization;
+    const { id } = req.params;
+
+    const allowedStatuses = ['approved', 'pending', 'rejected'];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        message: 'Invalid KYC status',
+      });
+    }
+
+    const customer = await OrgUser.findOneAndUpdate(
+      { _id: id, org_id },
+      {
+        $set: {
+          'kyc_details.kyc_approval_status': status,
+        },
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: 'KYC updated successfully',
+      customer,
+    });
+
+  } catch (error) {
+    console.error('❌ KYC Error:', error);
+    res.status(500).json({
+      message: 'Failed to update KYC',
+    });
+  }
+};
+
+
+/* =========================
+   UPDATE DEVICE STATUS
+========================= */
+export const updateDeviceStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const org_id = req.user.organization;
+    const { id } = req.params;
+
+    const allowedStatuses = ['linked', 'unlinked', 'declined'];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        message: 'Invalid device status',
+      });
+    }
+
+    const customer = await OrgUser.findOneAndUpdate(
+      { _id: id, org_id },
+      {
+        $set: {
+          user_device_status: status,
+        },
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      message: 'Device status updated',
+      customer,
+    });
+
+  } catch (error) {
+    console.error('❌ Device Error:', error);
+    res.status(500).json({
+      message: 'Failed to update device status',
+    });
+  }
+};
+
+
+/* =========================
+   UPLOAD CUSTOMER KYC ✅ (FIXED EXPORT)
 ========================= */
 export const uploadCustomerKyc = async (req, res) => {
   try {
@@ -57,10 +253,7 @@ export const uploadCustomerKyc = async (req, res) => {
     }
 
     const customer = await OrgUser.findOneAndUpdate(
-      {
-        _id: customer_id,
-        org_id,
-      },
+      { _id: customer_id, org_id },
       {
         $set: {
           'kyc_details.doc_type': doc_type || '',
@@ -71,127 +264,67 @@ export const uploadCustomerKyc = async (req, res) => {
       { new: true }
     );
 
-    if (!customer) {
-      return res.status(404).json({
-        message: 'Customer not found or access denied',
-      });
-    }
-
-    return res.status(200).json({
-      message: 'Customer KYC uploaded successfully',
+    res.status(200).json({
+      message: 'KYC uploaded successfully',
       customer,
     });
+
   } catch (error) {
-    console.error('❌ Upload Customer KYC Error:', error);
-    return res.status(500).json({
-      message: 'Failed to upload customer KYC',
+    console.error('❌ Upload KYC Error:', error);
+    res.status(500).json({
+      message: 'Failed to upload KYC',
     });
   }
 };
 
-
-/* =========================
-   UPDATE CUSTOMER KYC STATUS
-   - Profile-level only
-   - Does NOT sync installation anymore
-========================= */
-export const updateKycStatus = async (req, res) => {
+export const updateCustomer = async (req, res) => {
   try {
-    const { status } = req.body;
     const org_id = req.user.organization;
-    const customer_id = req.params.id;
+    const { id } = req.params;
+    const { name, email, phone, address } = req.body;
 
-    const allowedStatuses = ['approved', 'pending', 'rejected'];
+    /* =========================
+       🔥 SPLIT NAME FIX
+    ========================= */
+    const nameParts = name.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
 
-    if (!allowedStatuses.includes(status)) {
-      return res.status(400).json({
-        message: 'Invalid KYC status',
-      });
-    }
-
-    const customer = await OrgUser.findOneAndUpdate(
+    const updated = await OrgUser.findOneAndUpdate(
+      { _id: id, org_id },
       {
-        _id: customer_id,
-        org_id,
-      },
-      {
-        $set: {
-          'kyc_details.kyc_approval_status': status,
+        email_address: email,
+        phone_number: phone,
+
+        user_name: {
+          first_name: firstName,
+          last_name: lastName,
         },
+
+address: {
+  line: address?.line || '',
+  street: address?.street || '',
+  area: address?.area || '',
+  city: address?.city || '',
+  state: address?.state || '',
+  code: address?.code || '',
+  country: address?.country || 'India',
+},
       },
-      {
-        new: true,
-        runValidators: true,
-      }
+      { new: true }
     );
 
-    if (!customer) {
-      return res.status(404).json({
-        message: 'Customer not found or access denied',
-      });
+    if (!updated) {
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.status(200).json({
-      message: 'Customer KYC status updated successfully',
-      customer,
+      message: "User updated successfully",
+      customer: updated,
     });
-  } catch (error) {
-    console.error('❌ Update KYC Error:', error);
-    res.status(500).json({
-      message: 'Failed to update KYC status',
-    });
-  }
-};
 
-
-/* =========================
-   UPDATE DEVICE STATUS
-   allowed: linked | unlinked | declined
-========================= */
-export const updateDeviceStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
-    const org_id = req.user.organization;
-    const customer_id = req.params.id;
-
-    const allowedStatuses = ['linked', 'unlinked', 'declined'];
-
-    if (!allowedStatuses.includes(status)) {
-      return res.status(400).json({
-        message: 'Invalid device status',
-      });
-    }
-
-    const customer = await OrgUser.findOneAndUpdate(
-      {
-        _id: customer_id,
-        org_id,
-      },
-      {
-        $set: {
-          user_device_status: status,
-        },
-      },
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
-    if (!customer) {
-      return res.status(404).json({
-        message: 'Customer not found or access denied',
-      });
-    }
-
-    res.status(200).json({
-      message: 'Device status updated successfully',
-      customer,
-    });
-  } catch (error) {
-    console.error('❌ Update Device Error:', error);
-    res.status(500).json({
-      message: 'Failed to update device status',
-    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Update failed" });
   }
 };

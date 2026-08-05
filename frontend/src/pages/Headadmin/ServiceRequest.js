@@ -681,8 +681,8 @@ export default function ServiceRequest() {
     loadAllRequests();
     loadTechnicians();
   };
-
-  // Calculate stats
+  
+// Calculate stats
 const stats = {
   total: allRequests.length,
 open: allRequests.filter(

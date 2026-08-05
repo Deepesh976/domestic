@@ -225,39 +225,63 @@ const totalRevenueFromTransactions = useMemo(() => {
         ) : (
           <>
             {/* STATS */}
-            <div className="dashboard-stats">
-              <div className="stat-card stat-admins">
-                <div className="stat-card-header">
-                  <MdPeople className="stat-icon" />
-                  <span className="stat-badge">Active</span>
-                </div>
-                <div className="stat-value">{stats.totalAdmins}</div>
-                <p className="stat-label">Total Admins</p>
-                <div className="stat-footer">Managing organizations</div>
-              </div>
+<div className="dashboard-stats">
 
-              <div className="stat-card stat-devices">
-                <div className="stat-card-header">
-                  <MdDevices className="stat-icon" />
-                  <span className="stat-badge">Active</span>
-                </div>
-                <div className="stat-value">{stats.totalDevices}</div>
-                <p className="stat-label">Total Devices</p>
-                <div className="stat-footer">Deployed across platform</div>
-              </div>
+  {/* TOTAL ADMINS */}
+  <div className="stat-card stat-admins">
+    <div className="stat-card-header">
+      <MdPeople className="stat-icon" />
 
-              <div className="stat-card stat-growth">
-                <div className="stat-card-header">
-                  <MdTrendingUp className="stat-icon" />
-                  <span className="stat-badge">Growing</span>
-                </div>
-<div className="stat-value">
-  ₹{totalRevenueFromTransactions.toLocaleString('en-IN')}
+      <div className="stat-header-content">
+        <p className="stat-label">TOTAL ADMINS</p>
+        <div className="stat-value">
+          {stats.totalAdmins}
+        </div>
+      </div>
+    </div>
+
+    <div className="stat-footer">
+      Managing organizations
+    </div>
+  </div>
+
+  {/* TOTAL DEVICES */}
+  <div className="stat-card stat-devices">
+    <div className="stat-card-header">
+      <MdDevices className="stat-icon" />
+
+      <div className="stat-header-content">
+        <p className="stat-label">TOTAL DEVICES</p>
+        <div className="stat-value">
+          {stats.totalDevices}
+        </div>
+      </div>
+    </div>
+
+    <div className="stat-footer">
+      Deployed across platform
+    </div>
+  </div>
+
+  {/* TOTAL REVENUE */}
+  <div className="stat-card stat-growth">
+    <div className="stat-card-header">
+      <MdTrendingUp className="stat-icon" />
+
+      <div className="stat-header-content">
+        <p className="stat-label">TOTAL REVENUE (₹)</p>
+        <div className="stat-value">
+          ₹{totalRevenueFromTransactions.toLocaleString("en-IN")}
+        </div>
+      </div>
+    </div>
+
+    <div className="stat-footer">
+      Year to date
+    </div>
+  </div>
+
 </div>
-                <p className="stat-label">Total Revenue (₹)</p>
-                <div className="stat-footer">Year to date</div>
-              </div>
-            </div>
 
             {/* CHARTS */}
             <div className="dashboard-charts">

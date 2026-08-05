@@ -6,10 +6,9 @@
 .dashboard-page {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 6px;
   padding: 0px 32px 24px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f0f4f8 100%);
-  min-height: 100vh;
+  margin-top: -50px;
 }
 
 .header-filters {
@@ -29,7 +28,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 6px;
   padding: 20px 24px;
   background: linear-gradient(135deg, white 0%, #f9fafb 100%);
   border-radius: 16px;
@@ -123,37 +122,20 @@
 /* ========== STATS ========== */
 .dashboard-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
 }
 
 .stat-card {
   background: white;
-  padding: 32px;
+padding: 20px 22px;
+min-height: 150px;
   border-radius: 16px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, currentColor, transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.stat-card:hover::before {
-  opacity: 0.4;
 }
 
 .stat-card:hover {
@@ -164,20 +146,27 @@
 
 .stat-card-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 20px;
+  align-items: center;
+  gap: 18px;
+  margin: 0;
+}
+
+.stat-header-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
 }
 
 .stat-icon {
-  font-size: 32px;
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
+  font-size: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
-  background: #f0f9ff;
+  border-radius: 14px;
+  flex-shrink: 0;
 }
 
 .stat-admins .stat-icon {
@@ -230,30 +219,29 @@
 }
 
 .stat-value {
-  font-size: 44px;
+  margin-top: 8px;
+  font-size: 42px;
   font-weight: 800;
   color: #0f172a;
-  margin: 12px 0 8px 0;
-  letter-spacing: -1px;
+  line-height: 1;
 }
 
 .stat-label {
+  margin: 0;
   font-size: 13px;
   font-weight: 700;
   color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
-  margin: 0 0 14px 0;
+  letter-spacing: .7px;
 }
 
 .stat-footer {
-  font-size: 12px;
-  color: #9ca3b0;
-  margin-top: auto;
+  margin-top: 18px;
   padding-top: 14px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #eef2f7;
+  color: #94a3b8;
+  font-size: 13px;
 }
-
 /* ========== LOADING ========== */
 .dashboard-loading {
   display: flex;

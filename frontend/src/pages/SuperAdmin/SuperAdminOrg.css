@@ -3,12 +3,13 @@
     Professional & Modern Design
   ======================================== */
 
-  .org-page {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 0;
-  }
+.org-page {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  margin-top: -50px;
+}
 
   /* =========================
    CENTER TABLE CONTENT
@@ -32,52 +33,71 @@
 
 
   /* Header Section */
-  .org-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #e2e8f0;
-  }
-
-.org-header-right {
-  display: flex;
+.org-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 12px;
-  flex-wrap: nowrap;   /* ❌ prevent wrapping */
+  gap: 24px;
+
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+
+  padding: 22px 26px;
+
+  box-shadow: 0 6px 20px rgba(15,23,42,.06);
 }
-  .org-title {
-    font-size: 28px;
-    font-weight: 800;
-    color: #1a202c;
-    margin: 0;
-    letter-spacing: -0.5px;
-  }
+
+.org-header-left{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
+
+.org-header-center{
+    display:flex;
+    justify-content:center;
+}
+
+.org-header-right{
+    display:flex;
+    justify-content:flex-end;
+}
+.org-title{
+    margin:0;
+    font-size:30px;
+    font-weight:700;
+    color:#0f172a;
+}
 
   /* Action Buttons */
-  .org-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
+.org-actions{
+    display:flex;
+    align-items:center;
+    gap:14px;
+}
 
-  .org-button {
-    padding: 10px 18px;
-    border-radius: 8px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    color: white;
-    font-size: 13px;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
+.org-button{
+    width:105px;
+    height:48px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    border:none;
+    border-radius:10px;
+
+    color:#fff;
+
+    font-size:14px;
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s ease;
+}
 
   .org-button.primary {
     background: linear-gradient(135deg, #059669 0%, #10b981 100%);
@@ -120,23 +140,20 @@
   }
 
   /* Search Box */
-  .org-search {
-    width: 260px;
-    max-width: 260px;
-    padding: 11px 16px;
-    border-radius: 8px;
-    border: 2px solid #e2e8f0;
-    font-size: 13px;
-    font-weight: 500;
-    color: #1a202c;
-    transition: all 0.3s ease;
-    background: white;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 40px;
-    background-size: 18px;
-  }
+.org-search{
+    width:260px;
+    height:48px;
+
+    padding:0 18px;
+
+    border:1px solid #dbe3ef;
+    border-radius:12px;
+
+    font-size:14px;
+    font-weight:500;
+
+    background:#fff;
+}
 
   .org-search:hover {
     border-color: #cbd5e1;
@@ -152,6 +169,27 @@
   .org-search::placeholder {
     color: #94a3b8;
   }
+
+  .org-download-btn{
+    height:48px;
+    padding:0 22px;
+
+    border:1px solid #dbe3ef;
+    border-radius:12px;
+
+    background:#fff;
+
+    font-size:14px;
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.25s;
+}
+
+.org-download-btn:hover{
+    background:#f8fafc;
+}
 
   /* Table Container */
   .org-card {
@@ -219,36 +257,74 @@
   /* Pagination */
   .org-pagination {
     display: flex;
-    justify-content: center;
-    gap: 8px;
-    padding: 20px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 20px;
     border-top: 1px solid #e2e8f0;
+    background: #f8fafc;
+  }
+
+  .org-pagination-summary {
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .org-pagination-summary strong {
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  .org-pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .org-pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 94px;
     padding: 8px 12px;
-    border-radius: 6px;
-    border: 2px solid #e2e8f0;
+    border: 1px solid #dbe3ef;
+    border-radius: 8px;
     background: white;
-    color: #1a202c;
+    color: #475569;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .org-pagination-btn:hover:not(:disabled) {
+    border-color: #3b82f6;
+    color: #3b82f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
+  }
+
+  .org-pagination-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .org-pagination-status {
+    min-width: 84px;
+    color: #475569;
     font-size: 12px;
-    transition: all 0.3s ease;
-    min-width: 36px;
+    font-weight: 600;
     text-align: center;
   }
 
-  .org-pagination-btn:hover {
-    border-color: #3b82f6;
-    color: #3b82f6;
+  .org-select-column {
+    width: 40px;
   }
 
-  .org-pagination-btn.active {
-    background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
-    color: white;
-    border-color: #3b82f6;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  .org-table-logo {
+    height: 32px;
   }
 
   /* Empty State */
@@ -791,10 +867,25 @@
       font-size: 11px;
     }
 
-    .org-pagination button {
-      padding: 6px 10px;
+    .org-pagination {
+      align-items: stretch;
+      flex-direction: column;
+      padding: 14px;
+    }
+
+    .org-pagination-controls {
+      justify-content: space-between;
+    }
+
+    .org-pagination-btn {
+      min-width: 88px;
+      padding: 7px 10px;
       font-size: 11px;
-      min-width: 32px;
+    }
+
+    .org-pagination-status {
+      min-width: auto;
+      font-size: 11px;
     }
 
     .org-modal-overlay {

@@ -17,41 +17,32 @@ export const getPurifiers = async (req, res) => {
       });
     }
 
-    /* =========================
-       FETCH PURIFIERS
-    ========================= */
-    const purifiers = await OrgPurifier.find({
+const purifiers = await OrgPurifier.aggregate([
+  {
+    $match: {
       org_id: orgId,
-    }).sort({ createdAt: -1 });
+    },
+  },
+  {
+    $lookup: {
+      from: "org_users",
+      localField: "user_id",
+      foreignField: "user_id",
+      as: "user_details",
+    },
+  },
+  {
+    $unwind: {
+      path: "$user_details",
+      preserveNullAndEmptyArrays: true,
+    },
+  },
+]);
 
-    /* =========================
-       ATTACH USER DETAILS
-    ========================= */
-    const enriched = await Promise.all(
-      purifiers.map(async (p) => {
-        let userDetails = null;
+return res.status(200).json({
+  purifiers,
+});
 
-        if (p.user_id) {
-          const user = await OrgUser.findOne({
-            user_id: p.user_id, // string match
-            org_id: orgId,
-          }).select('-password');
-
-          if (user) {
-            userDetails = user;
-          }
-        }
-
-        return {
-          ...p.toObject(),
-          user_details: userDetails, // used by frontend modal
-        };
-      })
-    );
-
-    return res.status(200).json({
-      purifiers: enriched,
-    });
   } catch (error) {
     console.error('❌ Get purifiers error:', error);
     return res.status(500).json({

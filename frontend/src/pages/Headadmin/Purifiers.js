@@ -523,6 +523,7 @@ export default function Purifiers() {
   const [debouncedSearch] = useDebounce(search, 300);
   const [view, setView] = useState(null);
   const [userView, setUserView] = useState(null);
+  const [locationView, setLocationView] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -531,6 +532,9 @@ export default function Purifiers() {
       try {
         setLoading(true);
         const res = await axios.get('/api/headadmin/purifiers');
+        console.log(res.data.purifiers);
+
+console.log("PURIFIERS API RESPONSE:", res.data);
         setPurifiers(res.data.purifiers || []);
       } catch (err) {
         console.error('PURIFIER ERROR:', err);
@@ -683,6 +687,7 @@ export default function Purifiers() {
                     <Th style={{ width: '60px' }}>#</Th>
                     <Th>Device ID</Th>
                     <Th>Customer</Th>
+                    <Th>Order Type</Th>
                     <Th>Status</Th>
                     <Th>Location</Th>
                     <Th>Total Usage</Th>
@@ -700,26 +705,54 @@ export default function Purifiers() {
                           {p.device_id}
                         </DeviceId>
                       </Td>
-                      <Td>
-                        {p.user_details ? (
-                          <UserName onClick={() => setUserView(p.user_details)} style={{ margin: '0 auto' }}>
-                            {p.user_details.user_name?.first_name} {p.user_details.user_name?.last_name}
-                          </UserName>
-                        ) : (
-                          <span style={{ color: '#94a3b8' }}>Unassigned</span>
-                        )}
-                      </Td>
+<Td>
+  {p.user_details ? (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}
+    >
+      <UserName
+        onClick={() => setUserView(p.user_details)}
+        style={{ margin: 0 }}
+      >
+        {p.user_details.user_name?.first_name}{" "}
+        {p.user_details.user_name?.last_name}
+      </UserName>
+
+      <span
+        style={{
+          fontSize: "12px",
+          color: "#64748b",
+          marginTop: "3px",
+        }}
+      >
+        {p.user_details.phone_number}
+      </span>
+    </div>
+  ) : (
+    <span style={{ color: "#94a3b8" }}>Unassigned</span>
+  )}
+</Td>
+<Td>
+  {p.order_type || "—"}
+</Td>
                       <Td>
                         <StatusBadge status={p.status}>{p.status}</StatusBadge>
                       </Td>
-                      <Td>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.375rem', color: p.installed_location || p.user_details?.address ? 'inherit' : '#94a3b8' }}>
-                          {formatFullAddress(p)}
-                        </div>
-                      </Td>
+<Td>
+  <ActionButton
+    variant="secondary"
+    onClick={() => setLocationView(p)}
+  >
+    Click Me
+  </ActionButton>
+</Td>
                       <Td style={{ fontWeight: 600 }}>{p.total_usage ?? '0'} L</Td>
                       <Td>{p.avg_usage ?? '0'} L/d</Td>
-                      <Td style={{ whiteSpace: 'nowrap' }}>{formatIST(p.createdAt)}</Td>
+                      <Td style={{ whiteSpace: 'nowrap' }}>{formatIST(p.createdAt || p.created_at)}</Td>
                       <Td>
                         <ActionGroup>
                           <IconButton 
@@ -731,7 +764,7 @@ export default function Purifiers() {
                           >
                             <MdVisibility />
                           </IconButton>
-                          <IconButton 
+                          {/* <IconButton 
                             title="Analytics"
                             bg="#f5f3ff" 
                             color="#7c3aed"
@@ -739,7 +772,7 @@ export default function Purifiers() {
                             onClick={() => navigate(`/headadmin/purifiers/${p.device_id}/analysis`)}
                           >
                             <MdBarChart />
-                          </IconButton>
+                          </IconButton> */}
                           <IconButton 
                             title="Recharged Plan"
                             bg="#f0fdf4" 
@@ -803,6 +836,98 @@ export default function Purifiers() {
         </ModalOverlay>
       )}
 
+      {/* ================= LOCATION MODAL ================= */}
+{locationView && (
+  <ModalOverlay onClick={() => setLocationView(null)}>
+    <ModalContent
+      width="650px"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <ModalHeader>
+        <h3>
+          <MdLocationOn />
+          Installation Address
+        </h3>
+
+        <button onClick={() => setLocationView(null)}>
+          <MdClose />
+        </button>
+      </ModalHeader>
+
+      <ModalBody>
+        <DetailGrid>
+
+          <DetailItem>
+            <div className="label">House / Flat No</div>
+            <div className="value">
+              {locationView.installed_location?.house_flat_no || "—"}
+            </div>
+          </DetailItem>
+
+          <DetailItem>
+            <div className="label">Street</div>
+            <div className="value">
+              {locationView.installed_location?.street || "—"}
+            </div>
+          </DetailItem>
+
+          <DetailItem>
+            <div className="label">Area</div>
+            <div className="value">
+              {locationView.installed_location?.area || "—"}
+            </div>
+          </DetailItem>
+
+          <DetailItem>
+            <div className="label">District</div>
+            <div className="value">
+              {locationView.installed_location?.district || "—"}
+            </div>
+          </DetailItem>
+
+          <DetailItem>
+            <div className="label">City</div>
+            <div className="value">
+              {locationView.installed_location?.city || "—"}
+            </div>
+          </DetailItem>
+
+          <DetailItem>
+            <div className="label">State</div>
+            <div className="value">
+              {locationView.installed_location?.state || "—"}
+            </div>
+          </DetailItem>
+
+          <DetailItem>
+            <div className="label">Postal Code</div>
+            <div className="value">
+              {locationView.installed_location?.postal_code || "—"}
+            </div>
+          </DetailItem>
+
+          <DetailItem>
+            <div className="label">Country</div>
+            <div className="value">
+              {locationView.installed_location?.country || "—"}
+            </div>
+          </DetailItem>
+
+        </DetailGrid>
+      </ModalBody>
+
+      <ModalFooter>
+        <ActionButton
+          variant="secondary"
+          onClick={() => setLocationView(null)}
+        >
+          Close
+        </ActionButton>
+      </ModalFooter>
+    </ModalContent>
+  </ModalOverlay>
+)}
+
       {/* ================= PURIFIER DETAILS MODAL ================= */}
       {view && (
         <ModalOverlay onClick={() => setView(null)}>
@@ -858,12 +983,12 @@ export default function Purifiers() {
                   <div className="label">Flow Count</div>
                   <div className="value">{view.flow_sensor_count ?? '—'}</div>
                 </DetailItem>
-                <DetailItem style={{ gridColumn: '1 / span 2' }}>
+                {/* <DetailItem style={{ gridColumn: '1 / span 2' }}>
                   <div className="label">Installation Location</div>
                   <div className="value" style={{ background: '#f8fafc', padding: '0.5rem', borderRadius: '0.5rem' }}>
                     {formatFullAddress(view)}
                   </div>
-                </DetailItem>
+                </DetailItem> */}
               </DetailGrid>
               
               {view.replaced_module_history?.length > 0 && (

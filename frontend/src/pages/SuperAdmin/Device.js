@@ -597,16 +597,54 @@ const handleDeleteDevice = async () => {
     setFormErrors({});
   };
 
-  const downloadQR = async (qrValue, serialNumber) => {
+const downloadQR = async (qrValue, serialNumber) => {
   try {
-    const url = await QRCodeGenerator.toDataURL(qrValue);
+    // Generate QR image
+    const qrDataUrl = await QRCodeGenerator.toDataURL(qrValue, {
+      width: 220,
+      margin: 2,
+    });
 
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${serialNumber}_QR.png`;
-    link.click();
+    // Load QR image
+    const qrImage = new Image();
+    qrImage.src = qrDataUrl;
+
+    qrImage.onload = () => {
+      // Create canvas
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = 300;
+      canvas.height = 320;
+
+      // White background
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Draw QR
+      ctx.drawImage(qrImage, 40, 20, 220, 220);
+
+      // Serial Number
+      ctx.fillStyle = "#000000";
+      ctx.font = "bold 18px Arial";
+      ctx.textAlign = "center";
+
+ctx.fillText(
+  serialNumber,
+  canvas.width / 2,
+  275
+);
+
+      // Download
+      const finalImage = canvas.toDataURL("image/png");
+
+      const link = document.createElement("a");
+      link.href = finalImage;
+      link.download = `${serialNumber}_QR.png`;
+      link.click();
+    };
   } catch (err) {
-    console.error('QR Download error:', err);
+    console.error("QR Download Error:", err);
   }
 };
 

@@ -120,12 +120,12 @@ const SuperAdminNavbar = ({ children }) => {
         className={`sidebar ${sidebarOpen ? 'open' : ''}`}
       >
         <nav className="menu">
-          <NavLink end to="/superadmin">📊 Dashboard</NavLink>
-          <NavLink to="/superadmin/organizations">🏢 Organizations</NavLink>
-          <NavLink to="/superadmin/admins">👤 Admins</NavLink>
-          <NavLink to="/superadmin/devices">📱 Devices</NavLink>
-          <NavLink to="/superadmin/customers">👥 Customers</NavLink>
-          <NavLink to="/superadmin/transactions">💳 Transactions</NavLink>
+          <NavLink end to="/superadmin">Dashboard</NavLink>
+          <NavLink to="/superadmin/organizations">Organizations</NavLink>
+          <NavLink to="/superadmin/admins">Admins</NavLink>
+          <NavLink to="/superadmin/devices">Devices</NavLink>
+          <NavLink to="/superadmin/customers">Customers</NavLink>
+          <NavLink to="/superadmin/transactions">Transactions</NavLink>
         </nav>
       </aside>
 
